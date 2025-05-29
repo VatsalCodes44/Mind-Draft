@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl      = env("DIRECT_URL")
+}
+
+
+model User {
+  id              String        @id @default(uuid()) // to make id a string,
+  email           String        @unique
+  name            String    
+  password        String    
+  posts           Post[]
+  comments        Comments[]
+}
+// Why use UUIDs as IDs?
+// Globally unique: Useful in distributed systems.
+// Harder to guess: Better for security than auto-increment IDs.
+// Avoids collision: Even across different databases or tables.
+model Post {
+  id                  String        @id @default(uuid()) 
+  title               String     
+  summary             String    
+  content             String
+  editorState         String
+  imageExist          Boolean
+  published           Boolean       
+  date                DateTime     
+  likes               Int           @default(0) 
+  numberOfComments    Int           @default(0)
+  authorId            String        // corresponds to userId
+  author              User          @relation(fields: [authorId], references: [id])
+  comments            Comments[]
+}
+
+model Comments {
+  id             Int             @id @default(autoincrement())
+  blogId         String
+  authorId       String
+  date           DateTime
+  comment        String
+  Commentor      User          @relation(fields: [authorId], references: [id])
+  blog           Post          @relation(fields: [blogId], references: [id])
+}
+
+model Followers {
+  userId           String        @id @default(uuid())
+  Follower         String        @default(uuid())
+}
+
+model Following {
+  userId           String        @id @default(uuid())
+  Following        String        @default(uuid())
+}
