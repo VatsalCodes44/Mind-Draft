@@ -1,7 +1,7 @@
 import { memo } from "react";
 import Content from "./Content";
 import { useRecoilValue } from "recoil";
-import { htmlContent, getImage as img, title as t } from "../store/blogUpload/atom";
+import { htmlContent, getImage as img, title as t } from "../store/blogUploadEdit/atom";
 
 
 const Preview = memo(() => {

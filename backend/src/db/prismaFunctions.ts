@@ -219,6 +219,41 @@ export async function bulkBlogs(prisma: any, authorId: string, published: boolea
     }
 }
 
+export async function myBulkBlogs(prisma: any, authorId: string){
+    try {
+        const res = await prisma.post.findMany({
+            where: {
+                authorId
+            },
+            select : {
+                id: true,
+                title: true,
+                summary: true,
+                content: true,
+                editorState: true,
+                authorId: true,
+                imageExist: true,
+                date: true,
+                likes: true,
+                published: true,
+                numberOfComments: true,
+                author: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        })
+        if (res) {
+            return res;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        return null;
+    }
+}
+
 export async function likesUpdate(prisma: PrismaClient, blogId: string, likes: number) {
     try {
         const res = await prisma.post.update({

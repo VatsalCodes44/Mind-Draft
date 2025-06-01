@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { getImage, htmlContent as content, preview, summary as s, title as t, imageExist as imgExist, editorState as eState } from "../store/blogUpload/atom";
+import { getImage, htmlContent as content, preview, summary as s, title as t, imageExist as imgExist, editorState as eState } from "../store/blogUploadEdit/atom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import getDateTime from "./getDateTime";

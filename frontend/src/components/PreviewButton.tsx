@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { useSetRecoilState } from "recoil";
-import { htmlContent, preview } from "../store/blogUpload/atom";
+import { htmlContent, preview } from "../store/blogUploadEdit/atom";
 
 
 const PreviewButton = memo( () => {

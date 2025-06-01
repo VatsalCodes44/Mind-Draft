@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useSetRecoilState } from 'recoil';
+import {  useSetRecoilState } from 'recoil';
 import {
   EditorComposer,
   Editor,
@@ -18,27 +18,20 @@ import {
   Divider,
   InsertDropdown,
 } from 'verbum';
-import { editorState } from '../store/blogUpload/atom';
+import { editorState } from '../store/blogUploadEdit/atom';
+import { LexicalEditor } from 'lexical';
 
-const NoteViewer= memo(() => {
+const NoteViewer= memo(({editorStateEdit}: {editorStateEdit?: string}) => {
   const setEditorState = useSetRecoilState(editorState)
 
 
-    
-  // const initialEditorState = (editor: LexicalEditor) => {
-  //   const editorState = editor.parseEditorState(JSON.parse(a));
-  //   editor.setEditorState(editorState);
-  // };
-
-
-  // initialEditorState={initialEditorState}
-
-
   return (
-      <EditorComposer initialEditorState={()=>{}} >
+      <EditorComposer initialEditorState={editorStateEdit ? (editor: LexicalEditor) => {
+        const initialState = editor.parseEditorState(JSON.parse(editorStateEdit));
+        editor.setEditorState(initialState);
+      } : ()=>{}} >
         <Editor onChange={(editorState: string) =>{
           setEditorState(editorState)
-          console.log(editorState)
         }} placeholder='Write your mind-draft...' 
         emojisEnabled={true} emojiPickerEnabled={true}
         >

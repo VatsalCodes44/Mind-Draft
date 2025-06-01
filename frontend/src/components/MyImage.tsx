@@ -1,12 +1,12 @@
 import { useRecoilValue } from "recoil";
-import { blogAtomFamily, imageAtomFamily } from "../store/blogs/atom";
+import { myBlogAtomFamily, myImageAtomFamily } from "../store/blogs/atom";
 import { memo } from "react";
 
 
-const Image = memo(({blogId}: {blogId: string}) => {
-    const oneBlog = useRecoilValue(blogAtomFamily(blogId))
-    const oneImage = useRecoilValue(imageAtomFamily(blogId))
-    console.log(oneImage)
+const MyImage = memo(({blogId}: {blogId: string}) => {
+    const oneBlog = useRecoilValue(myBlogAtomFamily(blogId))
+    const oneImage = useRecoilValue(myImageAtomFamily(blogId))
+    console.log(oneImage,"vgedbhcnbfhcuhdniscinhs")
     if (!oneBlog.imageExist) {
     return (
     <div role="status" className=" space-y-8 animate-pulse md:space-y-0 md:space-x-8 rtl:space-x-reverse md:flex md:items-center">    
@@ -22,4 +22,4 @@ const Image = memo(({blogId}: {blogId: string}) => {
     }
 })
 
-export default Image;
+export default MyImage;

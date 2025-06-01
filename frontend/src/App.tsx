@@ -8,6 +8,8 @@ import { RecoilRoot } from "recoil"
 import BlogsLoader from "./components/BlogsLoader"
 import Random from "./pages/Random"
 import Edit from "./pages/Edit"
+import Me from "./pages/Me"
+import MyBlog from "./pages/MyBlog"
 
 const Upload = React.lazy( () => {
   return import("./pages/Upload")
@@ -27,6 +29,8 @@ function App() {
                 <Route path= "/Blog"    element = {<Blog/>} />
                 <Route path= "/upload"  element = {<Upload/>} />
                 <Route path= "/edit"    element = {<Edit/>} />
+                <Route path= "/me"      element = {<Me/>} />
+                <Route path= "/myBlog"  element = {<MyBlog />} />
                 <Route path= "/random"  element = {<Random />} />
               </Routes>
           </BrowserRouter>

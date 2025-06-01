@@ -1,9 +1,9 @@
-import NewBlog from "../components/NewBlog";
 import { useRecoilState, useSetRecoilState} from "recoil";
-import { htmlContent, preview as p } from "../store/blogUpload/atom";
+import { htmlContent, preview as p } from "../store/blogUploadEdit/atom";
 import Preview from "../components/Preview";
 import Publish from "../components/Publish";
 import { memo } from "react";
+import EditBlog from "../components/EditBlog";
 
 
 const Edit = memo(() => {
@@ -15,7 +15,7 @@ const Edit = memo(() => {
          <div>
             <div className={` ${preview  ===  "edit" ? "block" : "hidden"} `}>
                 <div className=" max-h-screen ">
-                    <NewBlog />
+                    <EditBlog />
                 </div>
             </div>
 

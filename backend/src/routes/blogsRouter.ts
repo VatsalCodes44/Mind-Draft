@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { jwtVerification } from '../middlewares/middlewares'
-import { addComment, bulkBlogs, client, createBlog, deleteBlog, getBlog, getComments, likesUpdate, updateBlog } from '../db/prismaFunctions'
+import { addComment, bulkBlogs, client, createBlog, deleteBlog, getBlog, getComments, likesUpdate, myBulkBlogs, updateBlog } from '../db/prismaFunctions'
 import { blogPostSchema, blogUpdateSchema } from "common-medium-project";
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client/extension';
@@ -317,6 +317,31 @@ blogsRouter.get("/bulk", async (c) => {
     const prisma = await client(c.env.DATABASE_URL)
     const response: blog[] = await bulkBlogs(prisma, c.get("userId"), true)
 
+
+    if (response) {
+      const blogsObject : blogsObject = {};
+      response.forEach((blog: blog) => {
+        blogsObject[blog.id] = blog
+      })
+      return c.json(blogsObject)
+    } else {
+      return c.json({
+        message: "some error occured"
+      }, 403)
+    }
+  } catch (err) {
+    return c.json({
+      message: "some error occured"
+    }, 403)
+  }
+})
+
+
+blogsRouter.get("/myBlogs", async (c) => {
+  try {
+    const prisma = await client(c.env.DATABASE_URL)
+    const response: blog[] = await myBulkBlogs(prisma, c.get("userId"))
+    console.log(response)
 
     if (response) {
       const blogsObject : blogsObject = {};

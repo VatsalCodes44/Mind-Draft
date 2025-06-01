@@ -1,19 +1,19 @@
 import { useSearchParams } from "react-router-dom"
-import OneBlog from "../components/OneBlog"
 import { memo } from "react"
 import Appbar from "../components/Appbar"
+import MyOneBlog from "../components/MyOneBlog"
 
 
-const Blog = memo(() => {
+const MyBlog = memo(() => {
     const [param] = useSearchParams()
     const blogId = param.get("blogId")
     return (
         <div className=" flex justify-center w-full max-w-screen">
-            <Appbar searchBar={true} publish={false} write={true} edit={false} notifications={true}/>
+            <Appbar searchBar={false} edit={true} write={false} publish={false}  notifications={false}/>
             <div className="mt-25 min-w-auto sm:w-xl md:w-2xl lg:min-w-3xl mx-10">
-                <OneBlog blogId={blogId || ""} />
+                <MyOneBlog blogId={blogId || ""} />
             </div>
         </div>
     )
 })
-export default Blog;
+export default MyBlog;

@@ -1,16 +1,17 @@
 import AppbarComponent from "./AppbarComponent"
-import TitleUploadPageComponent from "./TitleUploadPageComponent"
 import PreviewButton from "./PreviewButton"
-import { useRecoilState, useSetRecoilState } from "recoil"
-import { imageExist, getImage as img } from "../store/blogUploadEdit/atom"
-import NoteViewer from "./NoteViewer"
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import { editBlog as eBlog, imageExist, getImage as img } from "../store/blogUploadEdit/atom"
 import { memo } from "react"
+import TitleEditPageComponent from "./TitleEditPageComponent"
+import NoteViewer from "./NoteViewer"
 
 
 
-const NewBlog = memo(() => {
+const EditBlog = memo(() => {
     const [image, setImage] = useRecoilState(img)
     const setImageExist = useSetRecoilState(imageExist)
+    const editBlog = useRecoilValue(eBlog)
 
     return (
         <div className="">
@@ -23,13 +24,13 @@ const NewBlog = memo(() => {
 
             <div className=" mb-8 ">
                 <div className=" mx-2 lg:mx-20 xl:mx-70">
-                    <TitleUploadPageComponent />
+                    <TitleEditPageComponent editTitle={editBlog?.title || ""} />
                 </div>
             </div>
 
             <div className="flex justify-center mx-2 lg:mx-20 xl:mx-70">
                 <div className="border-1 w-full rounded-2xl border-slate-300">
-                    <NoteViewer />
+                    <NoteViewer editorStateEdit={editBlog?.editorState} />
                 </div>
             </div>
 
@@ -63,4 +64,4 @@ const NewBlog = memo(() => {
     )
 })
 
-export default NewBlog;
+export default EditBlog;

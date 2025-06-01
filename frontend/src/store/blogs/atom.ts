@@ -98,6 +98,77 @@ const imageAtomFamily = atomFamily({
 })
 
 
+
+
+
+
+
+const getMyBlogsObjectAtom = atom <BlogsObject> ({
+    key: "getMyBlogsBbjectAtom123",
+    default: selector({
+        key: "getMyBlogsSelectorAtom123",
+        get: async () => {
+            const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/myBlogs",{
+                headers: {
+                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
+                }, "responseType": "json"
+            })
+            const blogs = response.data
+            return blogs
+        }
+    })
+})
+
+
+const getMyImagesObjectAtom = atom <ImagesObject> ({
+    key: "getMyImagesObjectAtom123",
+    default: selector({
+        key: "getMyImagesObjectAtomSelector456",
+        get: async ({get}: {get: GetRecoilValue}) => {
+            const blogs = get(getMyBlogsObjectAtom)
+            const blogIds = Object.keys(blogs).filter((id) => {
+                if (blogs[id].imageExist){
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/image",{
+                blogIds,
+            },{
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
+                }
+            })
+            return response.data
+        }
+    })
+})
+
+const myBlogAtomFamily = atomFamily({
+    key: "myBlogAtomFamily123",
+    default: selectorFamily({
+        key: "myBlogAtomSelectorFamily456",
+        get: (id: string) => ({get}: {get: GetRecoilValue}) => {
+            const blogsObject = get(getMyBlogsObjectAtom)
+            return blogsObject[id]          
+        }
+    })
+})
+
+
+const myImageAtomFamily = atomFamily({
+    key: "myImageAtomFamily123",
+    default: selectorFamily({
+        key: "myImageAtomSelectorFamily123",
+        get: (id: string) => ({get}: {get: GetRecoilValue}) => {
+            const imagesObject = get(getMyImagesObjectAtom)
+            return imagesObject[id]          
+        }
+    })
+})
+
 type Comments = {
     authorId: string;
     date: string;
@@ -126,5 +197,5 @@ const commentsDataAtom = atom <Comments>({
 //     })
 // })
 
-export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentsDataAtom}
+export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentsDataAtom, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily}
 

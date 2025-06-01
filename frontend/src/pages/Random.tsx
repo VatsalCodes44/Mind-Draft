@@ -1,12 +1,6 @@
-import { useRef, useState } from "react"
-import NoteViewer from "../components/NoteViewer";
+// import { useRef, useState } from "react"
 
 
-function Random () {
-    return(
-        <NoteViewer />
-    )
-}
 
 
 // const Random = ({x}: {x:number}) => {
@@ -72,74 +66,78 @@ function Random () {
 
 
 
-// import { useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 
-// const Random = () => {
+const Random = () => {
     
-//     const ref1 = useRef<HTMLInputElement>(null);
-//     const ref2 = useRef<HTMLInputElement>(null);
-//     const ref3 = useRef<HTMLInputElement>(null);
-//     const ref4 = useRef<HTMLInputElement>(null);
-//     const ref5 = useRef<HTMLInputElement>(null);
-//     const ref6 = useRef<HTMLInputElement>(null);
+    const ref1 = useRef<HTMLInputElement>(null);
+    const ref2 = useRef<HTMLInputElement>(null);
+    const ref3 = useRef<HTMLInputElement>(null);
+    const ref4 = useRef<HTMLInputElement>(null);
+    const ref5 = useRef<HTMLInputElement>(null);
+    const ref6 = useRef<HTMLInputElement>(null);
 
-//     return (
-//         <div className="w-full">
-//             <div className="w-max mx-auto">
-//                 <SubOTP reference={ref1} onDone={() => {
-//                     ref2.current?.focus()
-//                 }} onBackspace={() => {
+    return (
+        <div className="w-full">
+            <div className="w-max mx-auto">
+                <SubOTP reference={ref1} onDone={() => {
+                    ref2.current?.focus()
+                }} onBackspace={() => {
                     
-//                 }}/>
-//                 <SubOTP reference={ref2} onDone={() => {
-//                     ref3.current?.focus()
-//                 }} onBackspace={() => {
-//                     ref1.current?.focus()
-//                 }}/>
-//                 <SubOTP reference={ref3} onDone={() => {
-//                     ref4.current?.focus()
-//                 }} onBackspace={() => {
-//                     ref2.current?.focus()
-//                 }}/>
-//                 <SubOTP reference={ref4} onDone={() => {
-//                     ref5.current?.focus()
-//                 }} onBackspace={() => {
-//                     ref3.current?.focus()
-//                 }}/>
-//                 <SubOTP reference={ref5} onDone={() => {
-//                     ref6.current?.focus()
-//                 }} onBackspace={() => {
-//                     ref4.current?.focus()
-//                 }}/>
-//                 <SubOTP reference={ref6} onDone={() => {
-//                 }} onBackspace={() => {
-//                     ref5.current?.focus()
-//                 }}/>
-//             </div>
-//         </div>
-//     )
-// }
+                }}/>
+                <SubOTP reference={ref2} onDone={() => {
+                    ref3.current?.focus()
+                }} onBackspace={() => {
+                    ref1.current?.focus()
+                }}/>
+                <SubOTP reference={ref3} onDone={() => {
+                    ref4.current?.focus()
+                }} onBackspace={() => {
+                    ref2.current?.focus()
+                }}/>
+                <SubOTP reference={ref4} onDone={() => {
+                    ref5.current?.focus()
+                }} onBackspace={() => {
+                    ref3.current?.focus()
+                }}/>
+                <SubOTP reference={ref5} onDone={() => {
+                    ref6.current?.focus()
+                }} onBackspace={() => {
+                    ref4.current?.focus()
+                }}/>
+                <SubOTP reference={ref6} onDone={() => {
+                }} onBackspace={() => {
+                    ref5.current?.focus()
+                }}/>
+            </div>
+        </div>
+    )
+}
 
-// const SubOTP = ({reference, onDone, onBackspace}: {reference: React.RefObject<HTMLInputElement | null>, onDone: () => void, onBackspace: () => void}) => {
-//     const [value, setValue] = useState(" ")
-//     return (
-//             <input type="text" placeholder="*" value={value} ref={reference} onChange={(e) => {
-//                 console.log(e.target.value)
-//                 if (["0","1","2","3","4","5","6","7","8","9"].includes(e.target.value.slice(1)) ){
-//                     setValue(e.target.value.slice(1))
-//                     onDone()
-//                 } else {
+const SubOTP = ({reference, onDone, onBackspace}: {reference: React.RefObject<HTMLInputElement | null>, onDone: () => void, onBackspace: () => void}) => {
+    const [value, setValue] = useState(" ")
+    return (
+            <input type="text" placeholder="*" value={value} ref={reference} onChange={(e) => {
+                console.log(e.target.value)
+                if (["0","1","2","3","4","5","6","7","8","9"].includes(e.target.value.slice(1)) ){
+                    setValue(e.target.value.slice(1))
+                    onDone()
+                } else {
 
-//                 }
-//             }} onKeyDown={(e) => {
-//                 console.log(e.key)
-//                 if (e.key == "Backspace") {
-//                     setValue("*")
-//                     onBackspace()
-//                 }
-//             }} className="ml-1 w-5 h-5 bg-amber-200 text-center pt-0.5" />
-//     )
-// }
+                }
+            }} onKeyDown={(e) => {
+                console.log(e.key)
+                if (e.key == "Backspace") {
+                    setValue("*")
+                    onBackspace()
+                }
+            }} className="ml-1 w-5 h-5 bg-amber-200 text-center pt-0.5" />
+    )
+}
+
+
+
+
 
 export default Random;

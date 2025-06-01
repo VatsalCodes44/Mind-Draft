@@ -11,7 +11,7 @@ const Blogs = memo(() => {
     return (
         <div className="">
             <div>
-                <Appbar />
+                <Appbar searchBar={true} publish={false} edit={false} write={true} notifications={true} />
             </div>
             <div className="pt-15 mx-auto w-full ">
                 {

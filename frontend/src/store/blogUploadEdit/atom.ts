@@ -36,6 +36,25 @@ const preview = atom <string> ({
     default: "edit"
 })
 
+interface Blog {
+    id: string;
+    title: string;
+    summary: string;
+    content: string;
+    editorState: string;
+    imageExist: boolean;
+    published: boolean;
+    date: string;
+    likes: number;
+    numberOfComments: number;
+    author: {
+      name: string
+    }
+    authorId: string;
+}
+const editBlog = atom<Blog | null>({
+    key: "editBlog123",
+    default: null
+})
 
-
-export {getImage, imageExist, title, htmlContent, preview, summary, editorState};
+export {getImage, imageExist, title, htmlContent, preview, summary, editorState, editBlog};
