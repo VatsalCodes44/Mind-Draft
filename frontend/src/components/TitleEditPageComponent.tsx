@@ -1,11 +1,10 @@
-import { memo, useEffect, useRef, useState } from "react";
-import { useSetRecoilState } from "recoil";
-import { title } from "../store/blogUploadEdit/atom";
+import { memo, useEffect, useRef } from "react";
+import { useRecoilState } from "recoil";
+import { editBlog as eBlog } from "../store/blogUploadEdit/atom";
 
 
-const TitleEditPageComponent = memo(({editTitle}: {editTitle: string}) => {
-    const setTitle = useSetRecoilState(title)
-    const [text, setText] = useState(editTitle);
+const TitleEditPageComponent = memo(() => {
+    const [editBlog, setEditBlog] = useRecoilState(eBlog)
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     
     // Adjust height on content change
@@ -19,17 +18,16 @@ const TitleEditPageComponent = memo(({editTitle}: {editTitle: string}) => {
 
     useEffect(() => {
         adjustHeight(); // initial run
-    }, [text]);
+    }, [editBlog.title]);
 
     return (
         <textarea 
         ref={textareaRef}
-        value = {text}
+        value = {editBlog.title}
         rows={1}
         style={{ minHeight: '2.5rem' }}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setTitle(e.target.value)
-        setText(e.target.value)
+        setEditBlog(p => ({...p, title: e.target.value}))
         }} 
         className=" border-b-1 border-slate-300 pt-3 resize-none overflow-hidden w-full text-4xl font-bold px-4 h-15 placeholder:text-4xl placeholder:text-gray-300 focus:outline-none" />
     )

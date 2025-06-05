@@ -1,14 +1,22 @@
 import NewBlog from "../components/NewBlog";
-import { useRecoilState, useSetRecoilState} from "recoil";
-import { htmlContent, preview as p } from "../store/blogUploadEdit/atom";
+import { useRecoilCallback, useRecoilState, useSetRecoilState} from "recoil";
+import { editorState, getImage, htmlContent, imageExist, preview as p, preview, summary, title } from "../store/blogUploadEdit/atom";
 import Preview from "../components/Preview";
 import Publish from "../components/Publish";
-import { memo } from "react";
+import { memo, useEffect } from "react";
+const atomsToReset = [getImage, imageExist, title, htmlContent, preview, summary, editorState]
 
 const Upload = memo(() => {
     const [preview, setPreview] = useRecoilState(p)
     const setHtmlContent = useSetRecoilState(htmlContent)
-
+    const resetAllAtoms = useRecoilCallback(({ reset }) => () => {
+        atomsToReset.forEach(atom => reset(atom));
+    }, []);
+    useEffect(()=>{
+        return () => {
+            resetAllAtoms()
+        }
+    },[])
 
     return (
         <div>
@@ -40,7 +48,6 @@ const Upload = memo(() => {
                                 const editorValue = document.querySelector(".ContentEditable__root")
                                 const htmlString = editorValue?.innerHTML ?? "";
                                 setHtmlContent(htmlString)
-                                console.log(htmlString)
                             }} className=" mt-15 sm:w-xl md:w-2xl lg:min-w-3xl mx-10 mb-10">
                         <Preview />
                     </div>

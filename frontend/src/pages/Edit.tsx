@@ -1,21 +1,43 @@
-import { useRecoilState, useSetRecoilState} from "recoil";
-import { htmlContent, preview as p } from "../store/blogUploadEdit/atom";
-import Preview from "../components/Preview";
-import Publish from "../components/Publish";
-import { memo } from "react";
+import { useRecoilCallback, useRecoilState, useRecoilValue, useSetRecoilState} from "recoil";
+import { editBlog, preview as p, summary, htmlContent, title, editImage, editorState, } from "../store/blogUploadEdit/atom";
+import { memo, useEffect } from "react";
 import EditBlog from "../components/EditBlog";
+import EditPreview from "../components/EditPreview";
+import EditPublish from "../components/EditPublish";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { getMyBlogsObjectAtom, myBlogAtomFamily } from "../store/blogs/atom";
 
-
+const atomsToReset = [p, summary, htmlContent, title, editorState, editImage, editBlog]
 const Edit = memo(() => {
+    const myBlogs = useRecoilValue(getMyBlogsObjectAtom)
+    const setEditBlog = useSetRecoilState(editBlog)
+    const navigate = useNavigate()
     const [preview, setPreview] = useRecoilState(p)
     const setHtmlContent = useSetRecoilState(htmlContent)
+    const [param] = useSearchParams()
+    const myBlogId = param.get("myBlogId")
+    console.log(myBlogId)
+    if (!myBlogId){
+        navigate("/me");
+        return;
+    }
+    const resetAllAtoms = useRecoilCallback(({ reset }) => () => {
+            atomsToReset.forEach(atom => reset(atom));
+    }, []);
+
+    useEffect(() => {
+        setEditBlog(myBlogs[myBlogId])
+        return () => {
+            resetAllAtoms();
+        }
+    },[])
 
 
     return(
          <div>
             <div className={` ${preview  ===  "edit" ? "block" : "hidden"} `}>
                 <div className=" max-h-screen ">
-                    <EditBlog />
+                    <EditBlog myBlogId={myBlogId} />
                 </div>
             </div>
 
@@ -41,16 +63,16 @@ const Edit = memo(() => {
                                 const editorValue = document.querySelector(".ContentEditable__root")
                                 const htmlString = editorValue?.innerHTML ?? "";
                                 setHtmlContent(htmlString)
-                                console.log(htmlString)
                             }} className=" mt-15 sm:w-xl md:w-2xl lg:min-w-3xl mx-10 mb-10">
-                        <Preview />
+                        <EditPreview  />
                     </div>
                 </div>
             </div>
 
 
             <div className={` ${preview === "publish" ? "block" : "hidden "} w-full px-5`}>
-                <Publish />
+               <EditPublish myBlogId={myBlogId} />
+                
             </div>
              
             

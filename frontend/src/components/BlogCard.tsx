@@ -60,7 +60,7 @@ const BlogCard = memo(({blog}: {blog: Blog}) => {
                                 {blog.imageExist ? 
                                 <Suspense fallback={<ImageLoader />} >
                                     <BlogsImage blogId={blog.id} />
-                                </Suspense> : <div> </div>}
+                                </Suspense> : <div></div>}
                             </div>
                         </div>
                     </div>

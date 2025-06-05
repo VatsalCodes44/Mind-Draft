@@ -13,7 +13,7 @@ password: z.string()
 })
 
 export const blogPostSchema = z.object({
-    image: z.instanceof(File).optional(),
+    image: z.instanceof(File).optional().nullable(),
     title: z.string().min(1),
     summary: z.string(),
     content: z.string().min(10),
@@ -23,14 +23,17 @@ export const blogPostSchema = z.object({
     published: z.enum(["true", "false"])
 })
 
-export const blogUpdateSchema = z.object({
-    id: z.string().uuid(),
-    title: z.string().optional(),
-    content: z.string().optional(),
-    published: z.boolean().optional()
+export const editPostSchema = z.object({
+  image: z.instanceof(File).optional(),
+  blogId: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  content: z.string(),
+  editorState: z.string(),
+  imageExist: z.boolean(),
 })
 
 export type signupBodySchemaType = z.infer<typeof signupBodySchema>
 export type signinBodySchemaType = z.infer<typeof signinBodySchema>
 export type blogPostSchemaType = z.infer<typeof blogPostSchema>
-export type blogUpdateSchemaType = z.infer<typeof blogUpdateSchema>
+export type blogUpdateSchemaType = z.infer<typeof editPostSchema>

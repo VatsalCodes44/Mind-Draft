@@ -11,6 +11,7 @@ const PreviewButton = memo( () => {
         const htmlString = editorValue?.innerHTML ?? "";
         setHtmlContent(htmlString)
         setPreview("preview")
+        window.scrollTo(0,0)
     }
     return (
         <div onClick={previewHandle} className="text-white text-lg bg-green-600 hover:bg-green-700 mx-2 rounded-full py-2 px-3">

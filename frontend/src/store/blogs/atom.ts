@@ -1,5 +1,3 @@
-
-
 import axios from "axios";
 import { atom, atomFamily, GetRecoilValue, selector, selectorFamily } from "recoil";
 
@@ -29,7 +27,7 @@ const getBlogsObjectAtom = atom <BlogsObject> ({
     default: selector({
         key: "getBlogsSelectorAtom",
         get: async () => {
-            const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/bulk",{
+            const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/firstBulk",{
                 headers: {
                     Authorization: `Bearer ${window.localStorage.getItem("token")}`
                 }, "responseType": "json"
@@ -61,7 +59,7 @@ const getImagesObjectAtom = atom <ImagesObject> ({
                     return false;
                 }
             })
-            const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/image",{
+            const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
                 blogIds,
             },{
                 headers: {
@@ -75,6 +73,9 @@ const getImagesObjectAtom = atom <ImagesObject> ({
 })
 
 
+// const blogAtomFamily = atomFamily<BlogsObject, number>({
+//     key: "blogAtomFamily123",
+// })
 const blogAtomFamily = atomFamily({
     key: "blogAtomFamily123",
     default: selectorFamily({
@@ -108,6 +109,7 @@ const getMyBlogsObjectAtom = atom <BlogsObject> ({
     default: selector({
         key: "getMyBlogsSelectorAtom123",
         get: async () => {
+            console.log("here i am")
             const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/myBlogs",{
                 headers: {
                     Authorization: `Bearer ${window.localStorage.getItem("token")}`
@@ -119,12 +121,27 @@ const getMyBlogsObjectAtom = atom <BlogsObject> ({
     })
 })
 
+// const getMyImagesObjectAtom = atom <ImagesObject> ({
+//     key: "getMyImagesObjectAtom123",
+//     default: {
+//         "abc": {
+//             id: "",
+//             image: ""
+//         }
+//     }
+// })
+
+
+const imagesFetch = atom({
+    key: "imagesFetched123",
+    default: false
+})
 
 const getMyImagesObjectAtom = atom <ImagesObject> ({
     key: "getMyImagesObjectAtom123",
     default: selector({
-        key: "getMyImagesObjectAtomSelector456",
-        get: async ({get}: {get: GetRecoilValue}) => {
+        key: "getMyImagesObjectAtomSelector123",
+        get: async ({get}: {get:GetRecoilValue})=> {
             const blogs = get(getMyBlogsObjectAtom)
             const blogIds = Object.keys(blogs).filter((id) => {
                 if (blogs[id].imageExist){
@@ -133,7 +150,7 @@ const getMyImagesObjectAtom = atom <ImagesObject> ({
                     return false;
                 }
             })
-            const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/image",{
+            const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
                 blogIds,
             },{
                 headers: {
@@ -141,8 +158,8 @@ const getMyImagesObjectAtom = atom <ImagesObject> ({
                     Authorization: `Bearer ${window.localStorage.getItem("token")}`
                 }
             })
-            return response.data
-        }
+            return response.data 
+        } 
     })
 })
 
@@ -197,5 +214,5 @@ const commentsDataAtom = atom <Comments>({
 //     })
 // })
 
-export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentsDataAtom, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily}
+export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentsDataAtom, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, imagesFetch}
 

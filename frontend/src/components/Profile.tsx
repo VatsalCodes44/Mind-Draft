@@ -1,11 +1,17 @@
 import { memo, useEffect, useRef, useState } from "react";
+import { useRecoilValue } from "recoil";
+import { userInfo as uInfo, userProfilePic } from "../store/userInfo/atom";
+import { useNavigate } from "react-router-dom";
 
 
 const Profile = memo(({color}: {color:string}) => {
+    const navigate = useNavigate()
     const [dropDown, setDropDown] = useState(false)
     const dropDownElement = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLDivElement>(null)
     const lastScroll = useRef<number> (0);
+    const userInfo = useRecoilValue(uInfo)
+    const profilePic = useRecoilValue(userProfilePic)
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropDownElement.current && !dropDownElement.current.contains(event.target as Node) && buttonRef.current && !buttonRef.current.contains(event.target as Node) && dropDown==true) {
@@ -30,17 +36,18 @@ const Profile = memo(({color}: {color:string}) => {
         <div className="flex justify-between">
 
             <div className="flex gap-4">
-                <div className={`hover:cursor-pointer w-10 h-10 sm:w-13 sm:h-13 rounded-full flex justify-center items-center text-lg sm:text-3xl text-white lg:hidden`} style={{background: color}} >
-                    {/* {oneBlog.author.name[0].toUpperCase()} */}
-                    V
+                <div className="w-15 h-15 sm:w-20 sm:h-20 rounded-full " style={{background: color}} >
+                    {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={userInfo.name.trim()[0].toUpperCase()} color={color}/>}
                 </div>
 
-                <div>
-                    <div className="w-full text-lg sm:text-2xl flex justify-center items-center font-semibold text-slate-900 lg:text-4xl lg:font-semibold">
-                        {"Vatsal mahajan"}
-                    </div>
-                    <div className="text-gray-700 lg:hidden text-sm sm:text-md">
-                        {2} followers
+                <div className="flex items-center">
+                    <div>
+                        <div className="w-full text-lg sm:text-2xl flex justify-center font-mono items-center font-semibold text-slate-900 lg:text-4xl lg:font-semibold">
+                            {userInfo.name}
+                        </div>
+                        <div className="text-gray-700 lg:hidden text-sm sm:text-md">
+                            {2} followers
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,7 +69,10 @@ const Profile = memo(({color}: {color:string}) => {
                 // ${dropDown ? "opacity-100 translate-y-2" : "opacity-0 -translate-y-2 pointer-events-none"}
             `}
             role="menu">
-                <div className="flex justify-start pl-5 py-3 gap-4 items-center ">
+                <div onClick={() => {
+                    navigate("/updateProfile")
+                }}
+                className="flex justify-start pl-5 py-3 gap-4 items-center">
                     <svg xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="none"
@@ -78,7 +88,7 @@ const Profile = memo(({color}: {color:string}) => {
                     </span>
                 </div>
 
-                <div className="flex justify-start pl-5 py-3 gap-4 items-center">
+                {/* <div className="flex justify-start pl-5 py-3 gap-4 items-center">
                     <svg xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="none"
@@ -92,11 +102,29 @@ const Profile = memo(({color}: {color:string}) => {
                     <span>
                         Change profile photo
                     </span>
-                </div>
+                </div> */}
 
             </div>
     </div>
     )
 })
+
+const Image = memo(({profilePic}: {profilePic: File | string }) => {
+    if (profilePic instanceof(File)){
+        profilePic = URL.createObjectURL(profilePic);
+    }
+    return (
+        <img src={profilePic} className="w-full h-full rounded-full" />
+    )
+})
+
+const ImageNotExist = memo(({username, color}:{username: string, color: string}) => {
+    return(
+        <div className="w-full h-full text-lg sm:text-3xl text-white rounded-full flex justify-center items-center" style={{background: color}}>
+                {username}
+        </div>
+    )
+})
+
 
 export default Profile;

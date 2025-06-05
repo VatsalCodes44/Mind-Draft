@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import { useSetRecoilState } from "recoil";
 import { htmlContent, preview } from "../store/blogUploadEdit/atom";
@@ -13,6 +13,8 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
     const dropDownElement = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLDivElement>(null)
     const lastScroll = useRef<number> (0);
+    const [param] = useSearchParams()
+    const myBlogId = param.get("myBlogId")
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -60,6 +62,7 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
                                 const htmlString = editorValue?.innerHTML ?? "";
                                 setHtmlContent(htmlString)
                                 setPreview("publish")
+                                window.scrollTo(0,0)
                             }} className="text-center hover:cursor-pointer py-1.5 mx-3 text-sm text-white" >Publish</button>
                         </div> 
                     </div>
@@ -93,7 +96,8 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
 
                     <div className={` ${edit ? "" : "hidden"} `}>
                         <div onClick={() => {
-                            navigate("/edit")
+                            navigate(`/edit?myBlogId=${myBlogId}`)
+                            
                         }} className="sm:block mt-0.5 hover:cursor-pointer">
                             <div className="flex">
                                 <div className="">

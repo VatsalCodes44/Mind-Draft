@@ -6,27 +6,12 @@ import Button from "./Button";
 import axios from "axios";
 
 
-interface Author {
+type Author = {
     id: string,
     name: string,
     email: string,
-    posts: Blog[]
-}
-interface Blog {
-    id: string;
-    title: string;
-    summary: string;
-    content: string;
-    editorState: string;
-    imageExist: boolean;
-    published: boolean;
-    date: string;
-    likes: number;
-    numberOfComments: number;
-    author: {
-      name: string
-    }
-    authorId: string;
+    aboutMe: string | undefined,
+    profilePicExist: boolean | undefined,
 }
 const SignupAuth = memo(() => {
     const [signupInput, setSignupInput] = useState<signupBodySchemaType>({
@@ -36,7 +21,7 @@ const SignupAuth = memo(() => {
     })
     const navigate = useNavigate()
     return (
-        <div> 
+        <div className="shadow-2xl p-5 rounded-md shadow-gray-400 lg:shadow-none lg:p-0 lg:rounded-none"> 
             <div className=""> 
                 <div className="text-center text-4xl font-bold w-76">
                     Create an account
@@ -80,6 +65,12 @@ const SignupAuth = memo(() => {
                         window.localStorage.setItem("username", response.data.user.name)
                         window.localStorage.setItem("email", response.data.user.email)
                         window.localStorage.setItem("userId",response.data.user.id)
+                        if (response.data.user.aboutMe){
+                            window.localStorage.setItem("aboutMe",response.data.user.aboutMe)
+                        }
+                        if (response.data.user.profilePicExist){
+                            window.localStorage.setItem("userId",response.data.user.id)
+                        }
                         navigate("/blogs")
                      }
                 }} />

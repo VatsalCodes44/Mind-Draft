@@ -1,63 +1,80 @@
 import { memo, useCallback, useState } from "react";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { getImage, htmlContent as content, preview, summary as s, title as t, imageExist as imgExist, editorState as eState } from "../store/blogUploadEdit/atom";
+import {  htmlContent as content, preview, editorState as eState, editImage as eImage, editBlog as eBlog } from "../store/blogUploadEdit/atom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import getDateTime from "./getDateTime";
 import { getMyBlogsObjectAtom, getMyImagesObjectAtom } from "../store/blogs/atom";
 
+async function objectURLToFile(objectUrl: string, fileName: string): Promise<File> {
+  const response = await fetch(objectUrl);
+  const blob = await response.blob();
+  const file = new File([blob], fileName, { type: blob.type });
+  return file;
+}
 
-const Publish = memo(() => {
-    const title = useRecoilValue(t)
-    const [summary,setSummary] = useRecoilState(s)
+const EditPublish = memo(({myBlogId}:{myBlogId: string}) => {
+    const [editBlog, setEditBlog] = useRecoilState(eBlog)
+    const [summary,setSummary] = useState(editBlog.summary)
     const htmlContent = useRecoilValue(content)
     const editorState = useRecoilValue(eState)
+    const [myBlogs,setMyBlogs] = useRecoilState(getMyBlogsObjectAtom) 
     const setPreview = useSetRecoilState(preview)
-    const image = useRecoilValue(getImage)
-    const imageExist = useRecoilValue(imgExist)
+    const [myBlogImages, setmyBlogImages] = useRecoilState(getMyImagesObjectAtom)
+    const editImage = useRecoilValue(eImage)
     const [ring, setRing ] = useState <boolean> (false)
     const [draftRing, setDraftRing] = useState <boolean>(false)
     const [clicked,setClicked] = useState <boolean>(false)
-    const [v,setMyblogsObject] = useRecoilState(getMyBlogsObjectAtom)
-    const setMyImagesObject = useSetRecoilState(getMyImagesObjectAtom)
-    const navigate = useNavigate()
-    
-
+    const navigate = useNavigate()  
 
     const handleApi = useCallback(async (published: boolean) => {
-        try{
-            const formData = new FormData()
-            if (image){
-                formData.append("image", image)
+        const formData = new FormData()
+        if (editBlog.imageExist && editImage){
+            if (myBlogs[myBlogId].imageExist && myBlogImages[myBlogId].image == editImage){
+            } else {
+                formData.append("image", await objectURLToFile(editImage, myBlogId))
+                await setMyBlogs(p => ({
+                    ...p, [myBlogId]:{
+                        ...p[myBlogId],
+                        imageExist: true
+                    }
+                }))
+                // setmyBlogImages(p => ({
+                //     ...p, [myBlogId]:{
+                //         ...p[myBlogId],
+                //         image: editImage
+                //     }
+                // }))
             }
-            if (title.trim() === ""){
-                setRing(false)
-                setDraftRing(false)
-                setClicked(false)
-                return
-            } 
-            if (htmlContent == `<p class="PlaygroundEditorTheme__paragraph"><br></p>`){
-                setRing(false)
-                setDraftRing(false)
-                setClicked(false)
-                alert("Content is empty!!!")
-                return
-            }
-            formData.append("title", title)
-            formData.append("content", htmlContent)
-            formData.append("imageExist", imageExist)
-            formData.append("published", published.toString())
-            formData.append("summary",summary)
-            formData.append("time", getDateTime())
-            formData.append("editorState", editorState)
-            
-            const response = await axios.post("http://localhost:8787/api/v1/blog/upload",formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                },
-            })
-            
+        } else {
+        }
+        
+        if (editBlog.title.trim() === ""){
+            setRing(false)
+            setDraftRing(false)
+            setClicked(false)
+            return
+        } 
+        if (htmlContent == `<p class="PlaygroundEditorTheme__paragraph"><br></p>`){
+            setRing(false)
+            setDraftRing(false)
+            setClicked(false)
+            alert("Content is empty!!!")
+            return
+        }
+        formData.append("title", editBlog.title)
+        formData.append("content", htmlContent)
+        formData.append("published", published.toString())
+        formData.append("summary",summary)
+        formData.append("editorState", editorState)
+        formData.append("blogId", myBlogId)
+        
+        axios.put("http://localhost:8787/api/v1/blog/edit",formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        responseType: 'blob'
+        }).then( async () => {
             setRing(false)
             setDraftRing(false)
             setClicked(false)
@@ -67,53 +84,25 @@ const Publish = memo(() => {
             } else {
                 alert("Saved in drafts")
             }
-            if(response.data){
-                const message: string = response.data.message;
-                if (message){
-                    setMyblogsObject(previous =>{
-                        return {
-                            [response.data.message]:{
-                                id: message,
-                                title,
-                                summary,
-                                content: htmlContent,
-                                editorState,
-                                imageExist: imageExist==="true",
-                                published,
-                                date: getDateTime(),
-                                likes: 0,
-                                numberOfComments: 0,
-                                author: {
-                                    name: window.localStorage.getItem("username")
-                                },
-                                authorId: window.localStorage.getItem("userId")
-                            }
-                            ,...previous
-                        }
-                    })
-                    await new Promise(() => setTimeout(()=> console.log(v), 3000))
-                    if (image){
-                        setMyImagesObject(previous=>{
-                            return {
-                                ...previous,
-                                [message]: {
-                                    id: message,
-                                    image: URL.createObjectURL(image)
-                                }
-                            }
-                        } )
+            setMyBlogs(previous => {
+                return {
+                    ...previous, [editBlog.id]: {
+                        ...previous[editBlog.id],
+                        title: editBlog.title,
+                        summary,
+                        content: htmlContent,
+                        editorState,
+                        published,
                     }
                 }
-            }
-        } catch(e) {
-            console.log(e)
+            })
+        }).catch(() => {
             setRing(false)
             setDraftRing(false)
             setClicked(false)
             alert("Failed! try again")
-        }
-            
-      },[title, summary, setSummary, setPreview, image, imageExist, htmlContent])
+        })
+      },[ summary, setSummary, setPreview, editImage, htmlContent, editBlog, setEditBlog, myBlogs, myBlogImages])
 
 
     return(
@@ -136,10 +125,11 @@ const Publish = memo(() => {
                             </div>
                         </div>
                         <div className="text-lg font-semibold border-b-2 pb-2 border-gray-200">
-                            { title.trim() == "" ? <div className="text-red-600 animate-pulse ">Title is empty!!!</div> :  <div>{title.length < 125 ? title : `${title.slice(0,125)}...`}</div>}
+                            { editBlog.title.trim() == "" ? <div className="text-red-600 animate-pulse ">Title is empty!!!</div> :  <div>{editBlog.title.length < 125 ? editBlog.title : `${editBlog.title.slice(0,125)}...`}</div>}
                         </div>
                         <div className="">
                             <textarea rows={2} 
+                            value = {summary}
                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                                 setSummary(e.target.value)
                             }}
@@ -173,7 +163,7 @@ const Publish = memo(() => {
                                 <div className="grid grid-cols-5 gap-10 mt-2">
                                     <div className="col-span-4">
                                         <div className=" text-xl font-bold">
-                                            {title.length > 94 ? `${title.slice(0,81)}...` : title}
+                                            {editBlog.title.length > 94 ? `${editBlog.title.slice(0,81)}...` : editBlog.title}
                                         </div>
                                         <div className="mt-2 font-semibold text-gray-500">
                                             {summary.length > 94 ? `${summary.slice(0,94)}...` : summary}
@@ -245,10 +235,11 @@ const Publish = memo(() => {
                             </div>
                         </div>
                         <div className="text-lg font-semibold border-b-2 pb-2 border-gray-200">
-                            { title.trim() == "" ? <div className="text-red-600 animate-pulse">Title is empty!!!</div> :  <div>{title.length < 157 ? title : `${title.slice(0,157)}...`}</div>}
+                            { editBlog.title.trim() == "" ? <div className="text-red-600 animate-pulse">Title is empty!!!</div> :  <div>{editBlog.title.length < 157 ? editBlog.title : `${editBlog.title.slice(0,157)}...`}</div>}
                         </div>
                         <div className="">
                             <textarea rows={2} 
+                            value = {summary}
                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                                 setSummary(e.target.value)
                             }}
@@ -280,7 +271,7 @@ const Publish = memo(() => {
                                 <div className="grid grid-cols-5 gap-10 mt-2">
                                     <div className="col-span-4">
                                         <div className=" text-xl font-bold">
-                                            {title.length > 109 ? `${title.slice(0,109)}...` : title}
+                                            {editBlog.title.length > 109 ? `${editBlog.title.slice(0,109)}...` : editBlog.title}
                                         </div>
                                         <div className="mt-2 font-semibold text-gray-500">
                                             {summary.length >= 120 ? `${summary.slice(0,120)}...` : summary}
@@ -339,4 +330,4 @@ const Publish = memo(() => {
     )
 }) 
 
-export default Publish;
+export default EditPublish;

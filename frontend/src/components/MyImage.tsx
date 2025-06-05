@@ -1,13 +1,12 @@
 import { useRecoilValue } from "recoil";
-import { myBlogAtomFamily, myImageAtomFamily } from "../store/blogs/atom";
+import { getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily } from "../store/blogs/atom";
 import { memo } from "react";
 
 
-const MyImage = memo(({blogId}: {blogId: string}) => {
-    const oneBlog = useRecoilValue(myBlogAtomFamily(blogId))
-    const oneImage = useRecoilValue(myImageAtomFamily(blogId))
-    console.log(oneImage,"vgedbhcnbfhcuhdniscinhs")
-    if (!oneBlog.imageExist) {
+const MyImage = memo(({myBlogId}: {myBlogId: string}) => {
+    const myBlogs = useRecoilValue(getMyBlogsObjectAtom)
+    const myBlogsImage = useRecoilValue(getMyImagesObjectAtom)
+    if (!myBlogs[myBlogId].imageExist) {
     return (
     <div role="status" className=" space-y-8 animate-pulse md:space-y-0 md:space-x-8 rtl:space-x-reverse md:flex md:items-center">    
         <div className="flex items-center min-w-40 sm:w-xl md:w-2xl lg:min-w-3xl min-h-60 sm:h-90 md:h-100 lg:min-h-110  justify-center bg-gray-200 rounded-sm ">
@@ -18,7 +17,7 @@ const MyImage = memo(({blogId}: {blogId: string}) => {
     </div>
     )
     } else {
-        return <img src={oneImage.image} alt="loading" className=" w-full h-auto rounded-2xl"/>
+        return <img src={myBlogsImage[myBlogId].image} alt="loading" className=" w-full h-auto rounded-2xl"/>
     }
 })
 

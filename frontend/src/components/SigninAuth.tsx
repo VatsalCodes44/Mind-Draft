@@ -6,27 +6,12 @@ import Button from "./Button";
 import axios from "axios";
 
 
-interface Author {
+type Author = {
     id: string,
     name: string,
     email: string,
-    posts: Blog[]
-}
-interface Blog {
-    id: string;
-    title: string;
-    summary: string;
-    content: string;
-    editorState: string;
-    imageExist: boolean;
-    published: boolean;
-    date: string;
-    likes: number;
-    numberOfComments: number;
-    author: {
-      name: string
-    }
-    authorId: string;
+    aboutMe: string | undefined,
+    profilePicExist: boolean | undefined,
 }
 const SigninAuth = memo(() => {   
     const [signinInput, setSigninInput] = useState<signinBodySchemaType>({
@@ -70,10 +55,17 @@ const SigninAuth = memo(() => {
                         }
                      } = await axios.post("http://localhost:8787/api/v1/user/signin", signinInput)
                      if (response) {
+                        console.log(response.data.user)
                         window.localStorage.setItem("token",response.data.jwt)
                         window.localStorage.setItem("username",response.data.user.name)
                         window.localStorage.setItem("email",response.data.user.email)
                         window.localStorage.setItem("userId",response.data.user.id)
+                        if (response.data.user.aboutMe){
+                            window.localStorage.setItem("aboutMe",response.data.user.aboutMe)
+                        }
+                        if (response.data.user.profilePicExist){
+                            window.localStorage.setItem("userId",response.data.user.id)
+                        }
                         navigate("/blogs")
                      }
                 }} />

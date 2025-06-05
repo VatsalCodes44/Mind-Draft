@@ -10,16 +10,15 @@ import MyImage from "./MyImage";
 import MyClap from "./MyClap";
 const color = randomColor()
 
-const MyOneBlog = memo(({ blogId }: {blogId: string}) => {
-    const ref1 = useRef<HTMLDivElement>(null)
-    const oneBlog = useRecoilValue(myBlogAtomFamily(blogId))
-    console.log(oneBlog.editorState)
-    const [comments, setComments] = useRecoilState(commentsDataAtom)
+const MyOneBlog = memo(({ myBlogId }: {myBlogId: string}) => {
+    const ref1 = useRef<HTMLDivElement>(null);
+    const oneBlog = useRecoilValue(myBlogAtomFamily(myBlogId));
+    const [comments, setComments] = useRecoilState(commentsDataAtom);
     useEffect(() => {
         const getComments = async () => {
             const res = await axios.get("http://localhost:8787/api/v1/blog/getComments", {
                 headers: {
-                    blogId,
+                    blogId: myBlogId,
                     Authorization: `Bearer ${window.localStorage.getItem("token")}`
                 }
             })
@@ -70,7 +69,7 @@ const MyOneBlog = memo(({ blogId }: {blogId: string}) => {
                 </div>
                 
                 <div className={`${oneBlog.imageExist ? "" : "hidden"} mt-15`}>
-                    <MyImage blogId={blogId} />
+                    <MyImage myBlogId={myBlogId} />
                 </div>
                 <div className="mt-10 border-b-1 border-gray-100 pb-15 ">
                     <div className="text-md sm:text-lg md:text-xl mx-2" dangerouslySetInnerHTML={{ __html: oneBlog.content }}/>

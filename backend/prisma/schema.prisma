@@ -21,6 +21,8 @@ model User {
   name            String    
   password        String    
   posts           Post[]
+  aboutMe         String?
+  profilePicExist Boolean?
   comments        Comments[]
 }
 // Why use UUIDs as IDs?

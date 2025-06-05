@@ -8,7 +8,6 @@ export async function client (url: string) {
     return createClient;
 }
 export async function createUser ( prisma: any, body: {email: string, password: string, name?: string} ) {
-    
     try {
         const res = await prisma.user.create({
             data: body,
@@ -16,7 +15,34 @@ export async function createUser ( prisma: any, body: {email: string, password: 
                 id: true,
                 name: true,
                 email: true,
-                posts: true,             
+                aboutMe: true,
+                profilePicExist: true
+            }
+        });
+        if (res) {
+            return res;
+        } else {
+            return null;
+        };
+    } catch (err) {
+        return null;
+    };
+}
+
+interface editUserData {
+    name: string;
+    aboutMe: string;
+    profilePicExist?: boolean
+}
+export async function editUser(prisma: PrismaClient, userId: string, body: editUserData){
+    try {
+        const res = await prisma.user.update({
+            where: {
+                id: userId
+            },
+            data: body,
+            select: {
+                id: true
             }
         });
         if (res) {
@@ -36,7 +62,14 @@ export async function findUser (prisma: any, options: {
 
     try {
         const res = await prisma.user.findUnique({
-            where: options
+            where: options,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                aboutMe: true,
+                profilePicExist: true
+            }
         });
         if (res) {
             return res;
@@ -70,7 +103,8 @@ export async function userLogin (prisma: any, options: {
                 id: true,
                 name: true,
                 email: true,
-                posts: true,
+                aboutMe: true,
+                profilePicExist: true
             }
         });
         if (res) {
@@ -105,7 +139,6 @@ export async function createBlog(prisma: any, body: {
             return null;
         }
     } catch (err) {
-        console.log(err)
         return null;
     }
 }
@@ -128,28 +161,7 @@ export async function deleteBlog(prisma: any, id: string) {
 }
 
 
-export async function updateBlog(prisma: any, id: string, body: {
-    title?: string;
-    content?: string;
-    published?: boolean;
-}) {
 
-    try {
-        const res = await prisma.post.update({
-            where: {
-                id,
-            }, 
-            data: body
-        })
-        if (res) {
-            return res;
-        } else {
-            return null;
-        }
-    } catch (err) {
-        return null;
-    }
-}
 
 
 export async function getBlog(prisma: any, id:string){
@@ -182,15 +194,61 @@ export async function getBlog(prisma: any, id:string){
 
 
 // adding pagination
-export async function bulkBlogs(prisma: any, authorId: string, published: boolean){
+export async function firstBulkBlogs(prisma: PrismaClient, authorId: string){
     try {
         const res = await prisma.post.findMany({
             where: {
-                published,
+                published: true,
                 authorId: {
                     not: authorId
                 }
-            },
+            },orderBy:{
+                date: "desc"
+            }, 
+            take: 10,            
+            select : {
+                id: true,
+                title: true,
+                summary: true,
+                content: true,
+                editorState: true,
+                authorId: true,
+                imageExist: true,
+                date: true,
+                likes: true,
+                numberOfComments: true,
+                author: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        })
+        if (res) {
+            return res;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        return null;
+    }
+}
+export async function bulkBlogs(prisma: PrismaClient, authorId: string, lastSeenBlogId: string){
+    try {
+        const res = await prisma.post.findMany({
+            where: {
+                published: true,
+                authorId: {
+                    not: authorId
+                }
+            },orderBy:{
+                date: "desc"
+            }, 
+            skip: 1,
+            take: 10,
+            cursor: {
+                id: lastSeenBlogId
+            },            
             select : {
                 id: true,
                 title: true,
@@ -303,7 +361,6 @@ export async function addComment(prisma: PrismaClient, blogId: string, authorId:
             return null;
         }
     } catch (err) {
-        console.log(err)
         return null;
     }
 }
@@ -332,7 +389,6 @@ export async function getComments(prisma: PrismaClient, blogId: string ) {
             return null;
         }
     } catch (err) {
-        console.log(err)
         return null;
     }
 }
@@ -343,20 +399,20 @@ export async function getComments(prisma: PrismaClient, blogId: string ) {
 //   editorState         String
 //   imageExist          Boolean
 //   published           Boolean
-interface editBlog {
-    title: string;
-    summary: string;
-    content: string;
-    editorState: string;
-    imageExist: boolean;
-    published: boolean
+interface editPost {
+    title: string,
+    summary: string,
+    content: string,
+    editorState: string,
+    imageExist?: boolean,
+    published: boolean,
 }
-export async function editBlog(prisma: PrismaClient, authorId: string, blogId: string, data: editBlog){
+export async function editBlog(prisma: PrismaClient, authorId: string, blogId: string, data: editPost){
     try {
         const res = await prisma.post.update({
             where: {
-            id: blogId,
-            authorId,
+                id: blogId,
+                authorId,
             },
             data,
         })
@@ -366,7 +422,6 @@ export async function editBlog(prisma: PrismaClient, authorId: string, blogId: s
             return null;
         }
     } catch (err) {
-        console.log(err)
         return null;
     }
 }

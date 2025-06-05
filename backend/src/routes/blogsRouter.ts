@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { jwtVerification } from '../middlewares/middlewares'
-import { addComment, bulkBlogs, client, createBlog, deleteBlog, getBlog, getComments, likesUpdate, myBulkBlogs, updateBlog } from '../db/prismaFunctions'
-import { blogPostSchema, blogUpdateSchema } from "common-medium-project";
+import { addComment, bulkBlogs, client, createBlog, deleteBlog, editBlog, firstBulkBlogs, getBlog, getComments, likesUpdate, myBulkBlogs } from '../db/prismaFunctions'
+import { blogPostSchema } from "common-medium-project";
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client/extension';
 
@@ -17,13 +17,15 @@ const blogsRouter = new Hono<{
 
 // jwt is send as header for all the blog routes 
 blogsRouter.use("/*", jwtVerification)
-
-
-interface blogPost {
-  title: string | null;
-  content: string | null;
-  imageExist: boolean,
-  published: boolean,
+interface createBlogFunction {
+    title: string;
+    summary: string;
+    content: string;
+    editorState: string;
+    imageExist: boolean;
+    published: boolean;
+    date: string;
+    authorId: string;
 }
 
 blogsRouter.post("/upload", async (c) => {
@@ -65,22 +67,7 @@ blogsRouter.post("/upload", async (c) => {
     }, 403)
   }
   
-  const blogContent: blogPost = {
-    title,
-    content,
-    imageExist,
-    published
-  }
-
-  const parseBlogContent = blogPostSchema.safeParse(blogContent)
-
-  if (!parseBlogContent.success){
-    return c.json({
-      message: parseBlogContent.error.issues[0].message
-    }, 403)
-  }
-
-  const response = await createBlog(prisma, {
+  const data: createBlogFunction = {
     title,
     summary,
     content,
@@ -89,9 +76,22 @@ blogsRouter.post("/upload", async (c) => {
     imageExist,
     published,
     authorId: c.get("userId"),
-  })
+  }
+
+  const response = await createBlog(prisma, data)
   if (!response) {
-    console.log(response)
+    let created: boolean = false;
+    let attempts = 0;
+    const maxAttempts = 3
+
+    while (!created && attempts < maxAttempts ) {
+      const response2 = await createBlog(prisma, data)
+      await new Promise(res => setTimeout(res, 300))
+      if (response2) {
+        created = true
+      }
+      attempts++;
+    }
     return c.json({
       message: "post cannot be created"
     },403)
@@ -112,21 +112,50 @@ blogsRouter.post("/upload", async (c) => {
             message: response.id
           })
         } else {
+
+          let imageUploaded: boolean = false;
+          let attempts = 0;
+          const maxAttempts = 3
+      
+          while (!imageUploaded && attempts < maxAttempts ) {
+            const response2 = await c.env.MY_BUCKET.put(fileName, file);
+            await new Promise(res => setTimeout(res, 300))
+            if (response2) {
+              imageUploaded = true;
+              return c.json({
+                  message: response.id
+              },200)
+            }
+            attempts++;
+          }
+
+          attempts=0;
+          let postDeleted = false;
+          while (!postDeleted && attempts < maxAttempts ) {
+            const response2 = await deleteBlog(prisma, fileName)
+            await new Promise(res => setTimeout(res, 300))
+            if (response2) {
+              postDeleted = true
+            }
+            attempts++;
+          }
+
           return c.json({
           message: "post cannot be created 1"
         },403) 
         }
       } catch (err) {
-        console.log(err)
         let deleted: boolean = false;
         let attempts = 0;
         const maxAttempts = 3
     
         while (!deleted && attempts < maxAttempts ) {
           const response2 = await deleteBlog(prisma, fileName)
+          await new Promise(res => setTimeout(res, 300))
           if (response2) {
             deleted = true
           }
+          attempts++;
         }
     
         return c.json({
@@ -134,49 +163,142 @@ blogsRouter.post("/upload", async (c) => {
         },403)
       }
   }
+  return c.json({
+    message: response.id
+  })
 
 })
 
 
 
-interface blogUpdate {
-  id: string,
-  title?: string,
-  content?: string,
-  published?: boolean
-}
+const editPostSchema = z.object({
+  image: z.instanceof(File).optional().nullable(),
+  blogId: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  content: z.string(),
+  editorState: z.string(),
+  published: z.boolean(),
+})
 
-blogsRouter.put('/', async (c) => {
-  try {
-    const prisma = await client(c.env.DATABASE_URL)
-    const body: blogUpdate = await c.req.json()
-    const parseBody = blogUpdateSchema.safeParse(body)
-    if (!parseBody.success){
-      return c.json({
-        message: parseBody.error.issues[0].message
-      },403)
-    }
-    const response = await updateBlog(prisma, body.id, {
-      title: body.title,
-      content: body.content,
-      published: body.published
-    } )
-    console.log(response)
-    if (response) {
-      return c.json({
-        message: "blog updated"
-      });
-    } else {
-      return c.json({
-        message: "blog cannot be updated"
-      },403)
-    }
-  } catch (err) {
+interface editPost {
+    title: string,
+    summary: string,
+    content: string,
+    editorState: string,
+    imageExist?: boolean,
+    published: boolean,
+}
+blogsRouter.put("/edit", async (c) => {
+  
+  console.log("...........................")
+  const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+  const formData: FormData = await c.req.formData()
+  const file = formData.get("image")
+  const blogId = formData.get("blogId")
+  const title = formData.get("title")
+  const summary = formData.get("summary")
+  const content = formData.get("content")
+  const editorState = formData.get("editorState")
+  const published = z.enum(["true", "false"]).transform((val) => val === "true").parse(formData.get("published"))
+  const parseFormData = editPostSchema.safeParse({
+    image:file,
+    blogId,
+    title,
+    summary,
+    content,
+    editorState,
+    published
+  })
+  if (!parseFormData.success) {
     return c.json({
-      message: "blog cannot be updated"
+      message: parseFormData.error.issues[0].message
+    }, 403)
+  }
+
+  if (typeof blogId !== "string" || typeof title !== "string" || typeof summary !== "string" || typeof content !== "string" || typeof editorState !== "string" ) {
+    return c.json({
+      message: "invalid data"
+    }, 403)
+  }
+
+  if (file && !(file instanceof File)) {
+    return c.json({
+      message: "invalid data"
+    }, 403)
+  }
+  
+
+  const data: editPost = {
+    title,
+    summary,
+    content,
+    editorState,
+    imageExist: file ? true : undefined,
+    published
+  }
+  const response = await editBlog(prisma,c.get("userId"), blogId, data)
+  if (!response) {
+    let created: boolean = false;
+    let attempts = 0;
+    const maxAttempts = 3
+
+    while (!created && attempts < maxAttempts ) {
+      const response2 = await editBlog(prisma,c.get("userId"), blogId, data)
+      await new Promise(res => setTimeout(res, 300))
+      if (response2) {
+        created = true
+      }
+      attempts++;
+    }
+
+    return c.json({
+      message: "post cannot be updated"
     },403)
   }
+
+  if (file){
+      const fileName: string = blogId;
+      try{
+        const r2Object = await c.env.MY_BUCKET.put(fileName, file)
+        if (r2Object){
+          console.log("''''''''''''''''''''''''''''''''")
+          return c.json({
+            message: response.id
+          })
+        } else {
+
+          let imageUploaded: boolean = false;
+          let attempts = 0;
+          const maxAttempts = 3
+      
+          while (!imageUploaded && attempts < maxAttempts ) {
+            const response2 = await c.env.MY_BUCKET.put(fileName, file);
+            await new Promise(res => setTimeout(res, 300))
+            if (response2) {
+              imageUploaded = true;
+              return c.json({
+                  message: response.id
+              },200)
+            }
+            attempts++;
+          }
+
+          return c.json({
+          message: "image not updated"
+        },403) 
+        }
+      } catch (err) {
+        return c.json({
+          message: "image cannot be updated"
+        },403)
+      }
+  }
+  return c.json({
+  message: "blog updated successfully"
+}, 200)
 })
+
 
 
 blogsRouter.get('/get/:blogId', async (c) => {
@@ -235,16 +357,15 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 }
 
 // return a no. of images with array of blogIds.
-blogsRouter.post("/image", async (c) => {
+blogsRouter.post("/images", async (c) => {
   try {
     const body: { blogIds: string[] } = await c.req.json();
     const blogIds = body.blogIds;
-    console.log(blogIds)
     if (!blogIds || !Array.isArray(blogIds)) {
       return c.json({ message: "invalid parameters" }, 400);
     }
 
-    const promises = blogIds.map((id) => c.env.MY_BUCKET.get(id));
+    const promises: Promise<R2ObjectBody | null>[] = blogIds.map((id) => c.env.MY_BUCKET.get(id));
     const r2Objects = await Promise.all(promises);
 
     const imagesBase64: ({
@@ -274,21 +395,24 @@ blogsRouter.post("/image", async (c) => {
       }
     });
 
-
-  const ImagesObj: {
-    [id: string]: {
+    interface ImageType {
       id: string,
       image: string
     }
-  } = {}
-  for (let i = 0; i < filteredImages.length; i++) {
-    ImagesObj[filteredImages[i]?.id] = filteredImages[i]
-  }
+    interface ImagesObjType {
+        [id: string]: {
+          id: string,
+          image: string
+        }
+    }
+    const ImagesObj: ImagesObjType = {};
+    for (let i = 0; i < filteredImages.length; i++) {
+      ImagesObj[filteredImages[i]?.id] = filteredImages[i]
+    }
 
     return c.json(ImagesObj);
 
   } catch (err) {
-    console.error(err);
     return c.json({ message: "internal error" }, 500);
   }
 });
@@ -301,21 +425,23 @@ interface blog {
     summary: string;
     content: string;
     editorState: string;
-    imageExist: boolean;
-    published: boolean;
-    date: string;
-    author: {
-      name: string
-    }
     authorId: string;
-}
+    imageExist: boolean;
+    date: Date;
+    likes: number;
+    author: {
+        name: string;
+    };
+    numberOfComments: number;
+}[]
 interface blogsObject {
   [id: string]: blog;
 }
-blogsRouter.get("/bulk", async (c) => {
+
+blogsRouter.get("/firstBulk", async (c) => {
   try {
-    const prisma = await client(c.env.DATABASE_URL)
-    const response: blog[] = await bulkBlogs(prisma, c.get("userId"), true)
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const response: blog[] | null = await firstBulkBlogs(prisma, c.get("userId"))
 
 
     if (response) {
@@ -335,13 +461,40 @@ blogsRouter.get("/bulk", async (c) => {
     }, 403)
   }
 })
+blogsRouter.get("/bulk", async (c) => {
+  try {
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const cursor = c.req.query("cursor")
+    if (cursor){
+      const response: blog[] | null = await bulkBlogs(prisma, c.get("userId"), cursor)
+      if (response) {
+        const blogsObject : blogsObject = {};
+        response.forEach((blog: blog) => {
+          blogsObject[blog.id] = blog
+        })
+        return c.json(blogsObject)
+      } else {
+        return c.json({
+          message: "some error occured"
+        }, 403)
+      }
+    } else {
+        return c.json({
+          message: "cursor not found"
+        }, 403)
+    }
+  } catch (err) {
+    return c.json({
+      message: "some error occured"
+    }, 403)
+  }
+})
 
 
 blogsRouter.get("/myBlogs", async (c) => {
   try {
     const prisma = await client(c.env.DATABASE_URL)
     const response: blog[] = await myBulkBlogs(prisma, c.get("userId"))
-    console.log(response)
 
     if (response) {
       const blogsObject : blogsObject = {};
@@ -421,14 +574,13 @@ blogsRouter.post("/addComment", async (c) => {
 blogsRouter.get("/getComments", async (c) => {
   try {
     const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
-    const blogId = await c.req.header("blogId")
+    const blogId = c.req.header("blogId")
     if (!blogId) {
       return c.json({
         message: 'comment not added'
       }) 
     } 
     const res = await getComments(prisma, blogId)
-    console.log(res)
       if (res) {
         return c.json(res)
       } else {
