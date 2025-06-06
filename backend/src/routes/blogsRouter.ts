@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { jwtVerification } from '../middlewares/middlewares'
-import { addComment, bulkBlogs, client, createBlog, deleteBlog, editBlog, firstBulkBlogs, getBlog, getComments, likesUpdate, myBulkBlogs } from '../db/prismaFunctions'
+import { addComment, bulkBlogs, client, createBlog, deleteBlog, editBlog, firstBulkBlogs, getBlog, getFirstComments, getNextComments, likesUpdate, myBulkBlogs, myFirstBulk } from '../db/prismaFunctions'
 import { blogPostSchema } from "common-medium-project";
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client/extension';
@@ -433,7 +433,7 @@ interface blog {
         name: string;
     };
     numberOfComments: number;
-}[]
+}
 interface blogsObject {
   [id: string]: blog;
 }
@@ -491,10 +491,10 @@ blogsRouter.get("/bulk", async (c) => {
 })
 
 
-blogsRouter.get("/myBlogs", async (c) => {
+blogsRouter.get("/myFirstBulk", async (c) => {
   try {
-    const prisma = await client(c.env.DATABASE_URL)
-    const response: blog[] = await myBulkBlogs(prisma, c.get("userId"))
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const response: blog[] | null = await myFirstBulk(prisma, c.get("userId"))
 
     if (response) {
       const blogsObject : blogsObject = {};
@@ -507,6 +507,37 @@ blogsRouter.get("/myBlogs", async (c) => {
         message: "some error occured"
       }, 403)
     }
+  } catch (err) {
+    return c.json({
+      message: "some error occured"
+    }, 403)
+  }
+})
+
+
+blogsRouter.get("/myBulk", async (c) => {
+  try {
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const cursor = c.req.query("cursor")
+    if (cursor){
+      const response: blog[] | null = await myBulkBlogs(prisma, c.get("userId"), cursor)
+        if (response) {
+        const blogsObject : blogsObject = {};
+        response.forEach((blog: blog) => {
+          blogsObject[blog.id] = blog
+        })
+        return c.json(blogsObject)
+      } else {
+        return c.json({
+          message: "some error occured"
+        }, 403)
+      }
+    } else {
+      return c.json({
+        message: "cursor not found"
+      })
+    }
+    
   } catch (err) {
     return c.json({
       message: "some error occured"
@@ -571,29 +602,62 @@ blogsRouter.post("/addComment", async (c) => {
 })
 
 
-blogsRouter.get("/getComments", async (c) => {
+blogsRouter.get("/getFirstComments", async (c) => {
   try {
     const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
     const blogId = c.req.header("blogId")
     if (!blogId) {
       return c.json({
-        message: 'comment not added'
+        message: "invalid parameters"
       }) 
     } 
-    const res = await getComments(prisma, blogId)
+    const res = await getFirstComments(prisma, blogId)
       if (res) {
         return c.json(res)
       } else {
        return c.json({
-          message: 'comment not added'
+          message: "invalid parameters"
         }) 
       }
   } catch (err) {
     return c.json({
-      message: 'comment not added'
+      message: "invalid parameters"
     }) 
   }
 })
+
+blogsRouter.get("/getNextComments", async (c) => {
+  try {
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const blogId = c.req.header("blogId")
+    const cursor = c.req.query("cursor")
+    if (!blogId || !cursor) {
+      return c.json({
+        message: "invalid parameters"
+      }) 
+    } 
+    const cursorInteger = parseInt(cursor)
+    if (!cursorInteger) {
+      return c.json({
+        message: "invalid parameters"
+      }) 
+    }
+    const res = await getNextComments(prisma, blogId, cursorInteger)
+      if (res) {
+        return c.json(res)
+      } else {
+       return c.json({
+          message: "invalid parameters"
+        }) 
+      }
+  } catch (err) {
+    return c.json({
+      message: "invalid parameters"
+    }) 
+  }
+})
+
+
 
 
 export default blogsRouter;

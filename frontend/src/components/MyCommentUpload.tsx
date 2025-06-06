@@ -2,12 +2,12 @@ import axios from "axios";
 import { memo, useEffect, useRef, useState } from "react";
 import getDateTime from "./getDateTime";
 import { useSetRecoilState } from "recoil";
-import { commentsDataAtom, getMyBlogsObjectAtom } from "../store/blogs/atom";
+import { commentAtomFamily, myBlogAtomFamily } from "../store/blogs/atom";
 
 
-const MyCommentUpload = memo( ({blogId}: {blogId: string}) => {
-    const setComments = useSetRecoilState(commentsDataAtom)
-    const setBlog = useSetRecoilState(getMyBlogsObjectAtom)
+const MyCommentUpload = memo( ({blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
+    const setComments = useSetRecoilState(commentAtomFamily(1))
+    const setBlogs = useSetRecoilState(myBlogAtomFamily(atomNumber))
     const [comment,setComment] = useState("")
     const [minHeight, setMinHeight] = useState("1rem")
     const [clicked, setClicked] = useState(false)
@@ -65,25 +65,27 @@ const MyCommentUpload = memo( ({blogId}: {blogId: string}) => {
                             if (response.status.toString() == "200") {
                                 setComments(previous => {
                                     return [
-                                        {
+                                        {   id: Math.random(),
                                             authorId: window.sessionStorage.getItem("userId")?.toString() || "",
                                             date: getDateTime(),
                                             comment,
                                             Commentor: {
                                                 name: window.sessionStorage.getItem("username")?.toString() || ""
                                             }
-                                        }, ...(previous ?? [] )
+                                        }, ...previous
                                     ]
                                 })
                                 if (textareaRef.current){
                                     textareaRef.current.value = ""
                                     textareaRef.current.style.height= "20px"
                                 }
-                                setBlog(previous => {
-                                    return {...previous, blogId: {
-                                        ...previous[blogId],
-                                        numberOfComments: previous[blogId].numberOfComments
-                                    }}
+                                setBlogs( previous => {
+                                    return {
+                                        ...previous, [blogId]:{
+                                            ...previous[blogId],
+                                            numberOfComments: previous[blogId].numberOfComments + 1
+                                        }
+                                    }
                                 })
                                 setClicked(false)
                                 setComment("")

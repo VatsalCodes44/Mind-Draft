@@ -202,7 +202,7 @@ export async function firstBulkBlogs(prisma: PrismaClient, authorId: string){
                 authorId: {
                     not: authorId
                 }
-            },orderBy:{
+            }, orderBy:{
                 date: "desc"
             }, 
             take: 10,            
@@ -233,6 +233,7 @@ export async function firstBulkBlogs(prisma: PrismaClient, authorId: string){
         return null;
     }
 }
+
 export async function bulkBlogs(prisma: PrismaClient, authorId: string, lastSeenBlogId: string){
     try {
         const res = await prisma.post.findMany({
@@ -277,11 +278,57 @@ export async function bulkBlogs(prisma: PrismaClient, authorId: string, lastSeen
     }
 }
 
-export async function myBulkBlogs(prisma: any, authorId: string){
+export async function myFirstBulk(prisma: PrismaClient, authorId: string){
     try {
         const res = await prisma.post.findMany({
             where: {
                 authorId
+            }, orderBy: {
+                date: "desc"
+            },
+            take: 10,
+            select : {
+                id: true,
+                title: true,
+                summary: true,
+                content: true,
+                editorState: true,
+                authorId: true,
+                imageExist: true,
+                date: true,
+                likes: true,
+                published: true,
+                numberOfComments: true,
+                author: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        })
+        if (res) {
+            return res;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        return null;
+    }
+}
+
+
+export async function myBulkBlogs(prisma: PrismaClient, authorId: string, lastSeenBlogId: string) {
+    try {
+        const res = await prisma.post.findMany({
+            where: {
+                authorId
+            }, orderBy: {
+                date: "desc"
+            },
+            skip: 1,
+            take: 10,
+            cursor: {
+                id: lastSeenBlogId
             },
             select : {
                 id: true,
@@ -311,6 +358,7 @@ export async function myBulkBlogs(prisma: any, authorId: string){
         return null;
     }
 }
+
 
 export async function likesUpdate(prisma: PrismaClient, blogId: string, likes: number) {
     try {
@@ -366,13 +414,53 @@ export async function addComment(prisma: PrismaClient, blogId: string, authorId:
 }
 
 
-export async function getComments(prisma: PrismaClient, blogId: string ) {
+export async function getFirstComments(prisma: PrismaClient, blogId: string ) {
     try {
         const res = await prisma.comments.findMany({
             where: {
             blogId
+            }, orderBy: {
+                date: "desc"
             }, 
+            take: 10,
             select: {
+                id: true,
+                authorId: true,
+                date: true,
+                comment: true,
+                Commentor:{
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        })
+        if (res) {
+            return res;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        return null;
+    }
+}
+
+
+export async function getNextComments(prisma: PrismaClient, blogId: string, lastSeenCommentId: number ) {
+    try {
+        const res = await prisma.comments.findMany({
+            where: {
+            blogId
+            }, orderBy: {
+                date: "desc"
+            }, 
+            skip: 1,
+            take: 10,
+            cursor: {
+                id: lastSeenCommentId
+            },
+            select: {
+                id: true,
                 authorId: true,
                 date: true,
                 comment: true,

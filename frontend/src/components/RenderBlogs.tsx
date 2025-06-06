@@ -7,7 +7,7 @@ import BlogCard from "./BlogCard";
 const RenderBlogs = memo(({atomNumber}:{atomNumber: number}) => {
     const blogsObject = useRecoilValue(blogAtomFamily(atomNumber))
     return (
-        <div className="pt-15 mx-auto w-full ">
+        <div className=" mx-auto w-full ">
             { blogsObject &&
             Object.keys(blogsObject).map((id) => {
                 return (

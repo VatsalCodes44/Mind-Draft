@@ -1,5 +1,5 @@
 import axios from "axios";
-import { atom, atomFamily, GetRecoilValue, selector, selectorFamily } from "recoil";
+import { atom, atomFamily, GetRecoilValue, selector } from "recoil";
 
 
 interface Blog {
@@ -34,7 +34,11 @@ const getBlogsObjectAtom = atom <BlogsObject> ({
                     }, "responseType": "json"
                 })
                 const blogs = response.data
-                return blogs
+                if (blogs){
+                    return blogs
+                } else {
+                    return {}
+                }
             } catch {
                 return {}
             }
@@ -72,7 +76,12 @@ const getImagesObjectAtom = atom <ImagesObject> ({
                         Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                     }
                 })
-                return response.data
+                const images = response.data
+                if (images){
+                    return images
+                } else {
+                    return {}
+                }
             } catch {
                 return {}
             }
@@ -137,14 +146,21 @@ const getMyBlogsObjectAtom = atom <BlogsObject> ({
     default: selector({
         key: "getMyBlogsSelectorAtom123",
         get: async () => {
-            console.log("here i am")
-            const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/myBlogs",{
-                headers: {
-                    Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
-                }, "responseType": "json"
-            })
-            const blogs = response.data
-            return blogs
+            try {
+                const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/myFirstBulk",{
+                    headers: {
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }, "responseType": "json"
+                })
+                const blogs = response.data
+                if (blogs) {
+                    return blogs
+                } else {
+                    return {}
+                }
+            } catch {
+                return {}
+            }
         }
     })
 })
@@ -160,87 +176,91 @@ const getMyBlogsObjectAtom = atom <BlogsObject> ({
 // })
 
 
-const imagesFetch = atom({
-    key: "imagesFetched123",
-    default: false
-})
-
 const getMyImagesObjectAtom = atom <ImagesObject> ({
     key: "getMyImagesObjectAtom123",
     default: selector({
         key: "getMyImagesObjectAtomSelector123",
         get: async ({get}: {get:GetRecoilValue})=> {
-            const blogs = get(getMyBlogsObjectAtom)
-            const blogIds = Object.keys(blogs).filter((id) => {
-                if (blogs[id].imageExist){
-                    return true;
+            try {
+                const blogs = get(getMyBlogsObjectAtom)
+                const blogIds = Object.keys(blogs).filter((id) => {
+                    if (blogs[id].imageExist){
+                        return true;
+                    } else {
+                        return false;
+                    }
+                })
+                const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                    blogIds,
+                },{
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }
+                })
+                const images = response.data
+                if (images){
+                    return images
                 } else {
-                    return false;
+                    return {}
                 }
-            })
-            const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
-                blogIds,
-            },{
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
-                }
-            })
-            return response.data 
+            } catch {
+                return {}
+            }
         } 
     })
 })
 
-const myBlogAtomFamily = atomFamily({
+const myBlogAtomFamily = atomFamily<BlogsObject, number>({
     key: "myBlogAtomFamily123",
-    default: selectorFamily({
-        key: "myBlogAtomSelectorFamily456",
-        get: (id: string) => ({get}: {get: GetRecoilValue}) => {
-            const blogsObject = get(getMyBlogsObjectAtom)
-            return blogsObject[id]          
-        }
-    })
+    default: {}
 })
 
 
-const myImageAtomFamily = atomFamily({
+const myImageAtomFamily = atomFamily<ImagesObject, number>({
     key: "myImageAtomFamily123",
-    default: selectorFamily({
-        key: "myImageAtomSelectorFamily123",
-        get: (id: string) => ({get}: {get: GetRecoilValue}) => {
-            const imagesObject = get(getMyImagesObjectAtom)
-            return imagesObject[id]          
-        }
-    })
+    default: {}
 })
 
-type Comments = {
+const isMyFirstBlogsBundleSet = atom<boolean>({
+    key: "isMyFirstBlogsBundleSet123",
+    default: false
+})
+
+
+
+type Comment = {
+    id: number,
     authorId: string;
     date: string;
     comment: string;
     Commentor: {
         name: string;
     }
-}[] | null
-const commentsDataAtom = atom <Comments>({
-    key: "commentsDataAtom",
-    default: null
+}
+
+
+
+const commentorImagesAtom = atom<ImagesObject>({
+    key: "commentorImages",
+    default: {}
 })
 
-// const CommentorimageAtom = atom({
-//     key: "imageAtomFamily",
-//     default: selector({
-//         key: "imageAtomSelectorFamily",
-//         get: async ({get}: {get: GetRecoilValue}) => {
-//             const comments = get(commentsDataAtom)
-//             const authorIds = comments?.map((comment) => {
-//                 return comment.authorId
-//             })
+const commentAtomFamily = atomFamily<Comment[], number>({
+    key: "commentAtomFamily123",
+    default: []
+})
 
-                      
-//         }
-//     })
-// })
+const commentImageAtomFamily = atomFamily<ImagesObject, number>({
+    key: "commentImageAtomFamily",
+    default: {}
+})
 
-export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentsDataAtom, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, imagesFetch, isFirstBlogsBundleSet, getAuthorImagesObjectAtom, authorImageAtomFamily}
+
+const numberOfCommentsFetched = atom<number>({
+    key: "numberOfCommentsFetched",
+    default: 0
+})
+
+export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentorImagesAtom, commentAtomFamily, commentImageAtomFamily, numberOfCommentsFetched, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, isFirstBlogsBundleSet, getAuthorImagesObjectAtom, authorImageAtomFamily, isMyFirstBlogsBundleSet}
 

@@ -2,10 +2,10 @@ import { memo, Suspense, useRef, useState } from "react";
 import randomColor from "../components/randomColor";
 import Profile from "../components/Profile";
 import Appbar from "../components/Appbar";
-import MyBlogs from "../components/MyBlogs";
 import BlogsLoader from "../components/BlogsLoader";
 import UserProfile from "../components/UserProfile";
 import { useNavigate } from "react-router-dom";
+import MyBlogsComponent from "../components/MyBlogsComponent";
 const Me = memo(() => {
     const color = useRef<string>(randomColor());
     const navigate = useNavigate()
@@ -41,7 +41,7 @@ const Me = memo(() => {
                     </div>
                     <div className="">
                         <Suspense fallback={<div className=" sm:mx-16 md:mx-16 lg:mx-0"><BlogsLoader /></div>}>
-                            <MyBlogs homeDraftsLibrary={homeDraftsLibrary}/>
+                            <MyBlogsComponent homeDraftsLibrary={homeDraftsLibrary}/>
                         </Suspense>
 
                     </div>

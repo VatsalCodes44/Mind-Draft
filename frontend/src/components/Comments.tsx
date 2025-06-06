@@ -1,6 +1,8 @@
-import { memo } from "react";
+import { memo, useRef } from "react";
 import randomColor from "./randomColor";
 import date from "./date"
+import { useRecoilValue } from "recoil";
+import { commentImageAtomFamily } from "../store/blogs/atom";
 
 type Comment = {
     authorId: string;
@@ -10,15 +12,15 @@ type Comment = {
         name: string;
     }
 }
-const Comments = memo(({comment}: {comment: Comment }) => {
-   
+const Comments = memo(({comment, commentAtomNumber}: {comment: Comment, commentAtomNumber: number }) => {
+    const images = useRecoilValue(commentImageAtomFamily(commentAtomNumber))
+    const color = useRef<string>(randomColor())
+    const commentAuthorImage = images[comment.authorId]
     return (
         <div className="border-b-1 border-gray-100 pb-8 mb-8">
             <div className=" flex"> 
-                <div className={`hover:cursor-pointer mr-3 w-9 h-9 text-center p-5 rounded-full flex justify-center`} style={{background: randomColor()}} >
-                    <div className="flex flex-col justify-center text-white text-lg">
-                        {comment.Commentor.name[0]}
-                    </div>
+                <div className={`hover:cursor-pointer mr-3 w-9 h-9 text-center rounded-full flex justify-center`} style={{background: randomColor()}} >
+                    {commentAuthorImage ? <CommentorImage image={commentAuthorImage.image} /> : <ImageNotExist username={comment.Commentor.name[0].toUpperCase()} color={color.current} />}
                 </div>
                 <div className=" text-md ">
                     <div className="flex ">
@@ -41,3 +43,20 @@ const Comments = memo(({comment}: {comment: Comment }) => {
 })
 
 export default Comments;
+
+const CommentorImage = memo(({image}: {image: string }) => {
+    return (
+        <img src={image} className="w-full h-full rounded-full" />
+    )
+})
+
+const ImageNotExist = memo(({username, color}:{username: string, color: string}) => {
+    return(
+        <div className="w-full h-full text-sm text-white rounded-full flex justify-center items-center" style={{background: color}}>
+                {username}
+        </div>
+    )
+})
+{/* <div className="h-6 w-6 text-xs mr-2 rounded-full">
+        {authorImages[blog.authorId] ? <Image profilePic={authorImages[blog.authorId].image}/> : <ImageNotExist username={blog.author.name.trim()[0].toUpperCase()} color={color.current}/>}
+</div> */}

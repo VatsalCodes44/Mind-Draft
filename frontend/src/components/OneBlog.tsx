@@ -1,31 +1,73 @@
 import randomColor from "./randomColor";
 import Image from "./Image";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { authorImageAtomFamily, blogAtomFamily, commentsDataAtom } from "../store/blogs/atom";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { authorImageAtomFamily, blogAtomFamily, commentAtomFamily, commentImageAtomFamily, numberOfCommentsFetched } from "../store/blogs/atom";
 import date from "./date";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import Clap from "./Clap";
 import axios from "axios";
-import Comments from "./Comments";
 import CommentUpload from "./CommentUpload";
-
+import CommentsPagination from "./CommentsPagination";
+type Comment = {
+    id: number,
+    authorId: string;
+    date: string;
+    comment: string;
+    Commentor: {
+        name: string;
+    }
+}
 const OneBlog = memo(({ blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
     const color = useRef<string>(randomColor())
     const ref1 = useRef<HTMLDivElement>(null)
     const blogs = useRecoilValue(blogAtomFamily(atomNumber))
     const authorImages = useRecoilValue(authorImageAtomFamily(atomNumber))
-    const [comments, setComments] = useRecoilState(commentsDataAtom)
+    const [commentRequestNumber, setCommentRequestNumber] = useState<number>(1)
+    const setFirstComments = useSetRecoilState(commentAtomFamily(1))
+    const setFirstCommentorsImages = useSetRecoilState(commentImageAtomFamily(1))
+    const setCommentsFetched = useSetRecoilState(numberOfCommentsFetched)
+    const isFirstCommentsBundleSet = useRef<boolean>(false)
     useEffect(() => {
         const getComments = async () => {
-            const res = await axios.get("http://localhost:8787/api/v1/blog/getComments", {
-                headers: {
-                    blogId,
-                    Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+            try{
+                const response = await axios.get("http://localhost:8787/api/v1/blog/getFirstComments", {
+                    headers: {
+                        blogId,
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }
+                })
+                if (response) {
+                    const comments: Comment[] = response.data
+
+                    const commentorIds = comments.map(comment => {
+                        return comment.authorId
+                    })
+                    const response2 = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                        blogIds: commentorIds,
+                    },{
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                        }
+                    })
+                    if (response2){
+                        const commentorImages = response2.data
+                        const commentsFetched = comments.length
+                        setFirstComments(comments)
+                        setFirstCommentorsImages(commentorImages)
+                        isFirstCommentsBundleSet.current = true
+                        if (commentsFetched){
+                            setCommentsFetched(comments.length)
+                        }
+                    }
                 }
-            })
-            setComments(res.data)
+            } catch {
+            }
         }
-        getComments()
+
+        if (!isFirstCommentsBundleSet.current){
+            getComments()
+        }
     }, [])
     return (
             <div className="">
@@ -34,8 +76,8 @@ const OneBlog = memo(({ blogId, atomNumber}: {blogId: string, atomNumber: number
                         {blogs[blogId].title}
                     </div>
                 </div>
-                <div className=" flex my-8 pb-">
-                    <div className="h-9 w-9 text-xs mr-2 rounded-full">
+                <div className=" flex my-8 items-center">
+                    <div className="h-9 w-9 text-xs mr-3 rounded-full">
                             {authorImages[blogs[blogId].authorId] ? <AuthorImage profilePic={authorImages[blogs[blogId].authorId].image}/> : <ImageNotExist username={blogs[blogId].author.name.trim()[0].toUpperCase()} color={color.current}/>}
                     </div>
                     <div className="mt-3 text-md ">
@@ -87,13 +129,7 @@ const OneBlog = memo(({ blogId, atomNumber}: {blogId: string, atomNumber: number
                     <CommentUpload blogId={blogId} atomNumber={atomNumber} />
                 </div>
                 <div>
-                    {comments ? 
-                    comments.map((comment) => {
-                        return (
-                            <Comments key={comment.comment} comment={comment} />
-                        )
-                    }) : null
-                    }
+                    <CommentsPagination commentRequestNumber={commentRequestNumber} setCommentRequestNumber={setCommentRequestNumber} blogId={blogId} totalComments={blogs[blogId].numberOfComments}/>
                 </div>
             </div>
     )

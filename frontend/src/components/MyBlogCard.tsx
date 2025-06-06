@@ -3,7 +3,6 @@ import { memo, Suspense, useRef } from "react";
 import ImageLoader from "./ImageLoader";
 import date from "./date";
 import MyBlogsImage from "./MyBlogsImage";
-import { useRecoilValue } from "recoil";
 import randomColor from "./randomColor";
 
 
@@ -24,7 +23,7 @@ interface Blog {
     authorId: string;
 }
 
-const MyBlogCard = memo(({myBlog, homeDraftsLibrary}: {myBlog: Blog, homeDraftsLibrary: string}) => {
+const MyBlogCard = memo(({myBlog, homeDraftsLibrary, atomNumber}: {myBlog: Blog, homeDraftsLibrary: "home" | "drafts" | "library", atomNumber: number}) => {
     const navigate = useNavigate()
     const profilePic = sessionStorage.getItem("profilePic")
     const color = useRef<string>(randomColor())
@@ -56,7 +55,7 @@ const MyBlogCard = memo(({myBlog, homeDraftsLibrary}: {myBlog: Blog, homeDraftsL
                         </div>
                     </div>
                     <div className="grid grid-cols-6 mt-2 hover:cursor-pointer" onClick={ () => {
-                        navigate(`/myBlog?myBlogId=${myBlog.id}`)
+                        navigate(`/myBlog?myBlogId=${myBlog.id}&number=${atomNumber}`)
                         window.scrollTo(0,0);
                     }}>
                         <div className="col-span-4 ">
@@ -71,13 +70,13 @@ const MyBlogCard = memo(({myBlog, homeDraftsLibrary}: {myBlog: Blog, homeDraftsL
                             <div>
                                 {myBlog.imageExist ? 
                                 <Suspense fallback={<ImageLoader />} >
-                                    <MyBlogsImage myBlogId={myBlog.id} />
+                                    <MyBlogsImage myBlogId={myBlog.id} atomNumber={atomNumber} />
                                 </Suspense> : <div> </div>}
                             </div>
                         </div>
                     </div>
                     <div onClick={ () => {
-                        navigate(`/myBlog?myBlogId=${myBlog.id}`)
+                        navigate(`/myBlog?myBlogId=${myBlog.id}&number=${atomNumber}`)
                         window.scrollTo(0,0);
                     }}
                     className=" flex mt-5 text-slate-600 text-xs font-semibold">

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react"
 import { useSetRecoilState } from "recoil";
-import { blogAtomFamily } from "../store/blogs/atom";
+import { blogAtomFamily, myBlogAtomFamily } from "../store/blogs/atom";
 
 type blogs = {
         id: string,
@@ -121,7 +121,8 @@ export function useClapDebounce(blogId:string, likes: number, firstRender: boole
 }
 
 
-export function useMyClapDebounce(blogId:string, likes: number, firstRender: boolean, setFirstRender: React.Dispatch<React.SetStateAction<boolean>>){
+export function useMyClapDebounce(blogId:string, likes: number, firstRender: boolean, setFirstRender: React.Dispatch<React.SetStateAction<boolean>>, atomNumber: number){
+    const setMyBlogs = useSetRecoilState(myBlogAtomFamily(atomNumber))
     useEffect(() => {
         if (firstRender){
             setFirstRender(false)
@@ -134,6 +135,15 @@ export function useMyClapDebounce(blogId:string, likes: number, firstRender: boo
                     headers: {
                         Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                     }
+                }).then(() => {
+                    setMyBlogs(p => {
+                    return {
+                        ...p, [blogId]: {
+                            ...p[blogId],
+                            likes
+                        }
+                    }
+            })
                 })
 
             }, 1000)

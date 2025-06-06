@@ -26,7 +26,6 @@ const Pagination = memo(({ requestNumber, setRequestNumber }: { requestNumber: n
                 },
                 responseType: "json"
             });
-
             const blogs = response.data;
 
             const blogIds = Object.keys(blogs).filter(id => blogs[id]?.imageExist);
@@ -38,7 +37,6 @@ const Pagination = memo(({ requestNumber, setRequestNumber }: { requestNumber: n
                     Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 }
             });
-
             const images = response2.data;
 
             const authorIds = Object.values(response2).map(blog => blog.authorId);
@@ -50,15 +48,13 @@ const Pagination = memo(({ requestNumber, setRequestNumber }: { requestNumber: n
                     Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 }
             });
-
             const authorImages = response3.data;
 
             setNextBulkBlogObject(blogs);
             setNextBulkImageObject(images);
             setNextbulkAuthorImageObject(authorImages);
             setRequestNumber(p => p + 1);
-        } catch (error) {
-            console.error("Failed to fetch blogs:", error);
+        } catch {
         } finally {
             fetching.current = false;
         }
@@ -83,14 +79,14 @@ const Pagination = memo(({ requestNumber, setRequestNumber }: { requestNumber: n
     }, [pagination, onBottomReach]);
 
     return (
-        <div>
+        <div className="pt-15">
             {
                 [...Array(requestNumber)].map((_, i) => (
                     <RenderBlogs key={i} atomNumber={i + 1} />
                 ))
             }
             <div className="mx-8 sm:mx-16 md:mx-16 lg:mx-0">
-                <BlogsLoaderChild />
+                <BlogsLoaderChild/>
             </div>
         </div>
     );

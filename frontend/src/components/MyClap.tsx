@@ -1,30 +1,17 @@
-import { memo, useEffect, useRef, useState } from "react";
-import { getMyBlogsObjectAtom } from "../store/blogs/atom";
-import { useRecoilState } from "recoil";
+import { memo, useRef, useState } from "react";
+import { myBlogAtomFamily } from "../store/blogs/atom";
+import { useRecoilValue } from "recoil";
 import { useMyClapDebounce } from "../hooks";
 
 
-const MyClap = memo(({blogId}: {blogId: string}) => {
+const MyClap = memo(({blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
     const [clap, setClapped] = useState <boolean> (false)
-    const [myBlogs,setmyBlogs] = useRecoilState(getMyBlogsObjectAtom)
+    const myBlogs = useRecoilValue(myBlogAtomFamily(atomNumber))
     const [firstRender, setFirstRender] = useState<boolean>(true)
     const likeCountFormatter = new Intl.NumberFormat('en-US')
     const likes = useRef<number>(myBlogs[blogId].likes)
     const [renderLikes, setRenderLikes] = useState<number>(myBlogs[blogId].likes)
-    useMyClapDebounce(blogId, likes.current, firstRender, setFirstRender)
-    useEffect(() => {
-
-        return () => {
-            setmyBlogs(p => {
-                return {
-                    ...p, [blogId]: {
-                        ...p[blogId],
-                        likes: likes.current
-                    }
-                }
-            })
-        }
-    }, [])
+    useMyClapDebounce(blogId, likes.current, firstRender, setFirstRender, atomNumber)
     return (
         <div className="flex hover:cursor-pointer">
             <div >

@@ -9,12 +9,10 @@ const BlogsComponent = memo(() => {
     const firstBlogs = useRecoilValue(getBlogsObjectAtom)
     const firstImages = useRecoilValue(getImagesObjectAtom)
     const firstAuthorimages = useRecoilValue(getAuthorImagesObjectAtom)
-    console.log(firstAuthorimages)
     const setBlogAtomFamily = useSetRecoilState(blogAtomFamily(1))
     const setImagesAtomFamily = useSetRecoilState(imageAtomFamily(1))
     const setAuthorImagesAtomFamily = useSetRecoilState(authorImageAtomFamily(1))
     const [isFirstBlogsBundleSet, setIsFirstBlogsBundleSet] = useRecoilState(FirstBlogsBundleSet)
-    console.log("BlogsComponent")
     useEffect(() => {
         if (!isFirstBlogsBundleSet){
             setBlogAtomFamily(firstBlogs)

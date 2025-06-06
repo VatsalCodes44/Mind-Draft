@@ -122,7 +122,7 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
 
                     <div ref={buttonRef} onClick={() => {
                             setDropDown(p => !p);
-                    }} className="h-8 w-8 text-xs rounded-full mr-3 sm:mr-6.5 p-1 hover:cursor-pointer">
+                    }} className="h-9 w-9 text-xs rounded-full mr-3 sm:mr-6.5 pb-0.5 hover:cursor-pointer">
                             {sessionStorage.getItem("profilePicExist") ? <AuthorImage profilePic={sessionStorage.getItem("profilePic") || ""}/> : <ImageNotExist username={(sessionStorage.getItem("username") || "a").toUpperCase()} color={color.current}/>}
                     </div>
                     <div ref={dropDownElement}

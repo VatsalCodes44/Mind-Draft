@@ -2,11 +2,11 @@ import axios from "axios";
 import { memo, useEffect, useRef, useState } from "react";
 import getDateTime from "./getDateTime";
 import { useSetRecoilState } from "recoil";
-import { blogAtomFamily, commentsDataAtom } from "../store/blogs/atom";
+import { blogAtomFamily, commentAtomFamily } from "../store/blogs/atom";
 
 
 const CommentUpload = memo( ({blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
-    const setComments = useSetRecoilState(commentsDataAtom)
+    const setComments = useSetRecoilState(commentAtomFamily(1))
     const setBlogs = useSetRecoilState(blogAtomFamily(atomNumber))
     const [comment,setComment] = useState("")
     const [minHeight, setMinHeight] = useState("1rem")
@@ -65,14 +65,15 @@ const CommentUpload = memo( ({blogId, atomNumber}: {blogId: string, atomNumber: 
                             if (response.status.toString() == "200") {
                                 setComments(previous => {
                                     return [
-                                        {
+                                        {   
+                                            id: Math.random(),
                                             authorId: window.sessionStorage.getItem("userId")?.toString() || "",
                                             date: getDateTime(),
                                             comment,
                                             Commentor: {
                                                 name: window.sessionStorage.getItem("username")?.toString() || ""
                                             }
-                                        }, ...(previous ?? [] )
+                                        }, ...previous
                                     ]
                                 })
                                 if (textareaRef.current){
