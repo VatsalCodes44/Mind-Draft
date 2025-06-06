@@ -5,7 +5,7 @@ import EditBlog from "../components/EditBlog";
 import EditPreview from "../components/EditPreview";
 import EditPublish from "../components/EditPublish";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getMyBlogsObjectAtom, myBlogAtomFamily } from "../store/blogs/atom";
+import { getMyBlogsObjectAtom } from "../store/blogs/atom";
 
 const atomsToReset = [p, summary, htmlContent, title, editorState, editImage, editBlog]
 const Edit = memo(() => {
@@ -26,11 +26,20 @@ const Edit = memo(() => {
     }, []);
 
     useEffect(() => {
+        setEditBlog(myBlogs[myBlogId]);
+
+    return () => {
+        resetAllAtoms();
+    };
+    }, []);
+    
+    useEffect(() => {
         setEditBlog(myBlogs[myBlogId])
         return () => {
             resetAllAtoms();
         }
     },[])
+    
 
 
     return(

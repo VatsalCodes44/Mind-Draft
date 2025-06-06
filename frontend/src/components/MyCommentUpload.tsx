@@ -2,12 +2,12 @@ import axios from "axios";
 import { memo, useEffect, useRef, useState } from "react";
 import getDateTime from "./getDateTime";
 import { useSetRecoilState } from "recoil";
-import { blogAtomFamily, commentsDataAtom } from "../store/blogs/atom";
+import { commentsDataAtom, getMyBlogsObjectAtom } from "../store/blogs/atom";
 
 
-const CommentUpload = memo( ({blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
+const MyCommentUpload = memo( ({blogId}: {blogId: string}) => {
     const setComments = useSetRecoilState(commentsDataAtom)
-    const setBlogs = useSetRecoilState(blogAtomFamily(atomNumber))
+    const setBlog = useSetRecoilState(getMyBlogsObjectAtom)
     const [comment,setComment] = useState("")
     const [minHeight, setMinHeight] = useState("1rem")
     const [clicked, setClicked] = useState(false)
@@ -79,10 +79,10 @@ const CommentUpload = memo( ({blogId, atomNumber}: {blogId: string, atomNumber: 
                                     textareaRef.current.value = ""
                                     textareaRef.current.style.height= "20px"
                                 }
-                                setBlogs(previous => {
-                                    return {...previous, [blogId]:{
+                                setBlog(previous => {
+                                    return {...previous, blogId: {
                                         ...previous[blogId],
-                                        numberOfComments: previous[blogId].numberOfComments+1
+                                        numberOfComments: previous[blogId].numberOfComments
                                     }}
                                 })
                                 setClicked(false)
@@ -99,5 +99,4 @@ const CommentUpload = memo( ({blogId, atomNumber}: {blogId: string, atomNumber: 
     )
 })
 
-export default CommentUpload;
-
+export default MyCommentUpload;

@@ -1,25 +1,26 @@
 import randomColor from "./randomColor";
 import Image from "./Image";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { blogAtomFamily, commentsDataAtom } from "../store/blogs/atom";
+import { authorImageAtomFamily, blogAtomFamily, commentsDataAtom } from "../store/blogs/atom";
 import date from "./date";
 import { memo, useEffect, useRef } from "react";
 import Clap from "./Clap";
 import axios from "axios";
 import Comments from "./Comments";
 import CommentUpload from "./CommentUpload";
-const color = randomColor()
 
-const OneBlog = memo(({ blogId }: {blogId: string}) => {
+const OneBlog = memo(({ blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
+    const color = useRef<string>(randomColor())
     const ref1 = useRef<HTMLDivElement>(null)
-    const oneBlog = useRecoilValue(blogAtomFamily(blogId))
+    const blogs = useRecoilValue(blogAtomFamily(atomNumber))
+    const authorImages = useRecoilValue(authorImageAtomFamily(atomNumber))
     const [comments, setComments] = useRecoilState(commentsDataAtom)
     useEffect(() => {
         const getComments = async () => {
             const res = await axios.get("http://localhost:8787/api/v1/blog/getComments", {
                 headers: {
                     blogId,
-                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
+                    Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 }
             })
             setComments(res.data)
@@ -30,31 +31,29 @@ const OneBlog = memo(({ blogId }: {blogId: string}) => {
             <div className="">
                 <div className="">
                     <div className=" font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
-                        {oneBlog.title}
+                        {blogs[blogId].title}
                     </div>
                 </div>
                 <div className=" flex my-8 pb-">
-                    <div className={`hover:cursor-pointer mr-3 mt-3 w-9 h-9 text-center p-5 rounded-full flex justify-center`} style={{background: color}} >
-                        <div className="flex flex-col justify-center text-white text-lg">
-                            {oneBlog.author.name[0].toUpperCase()}
-                        </div>
+                    <div className="h-9 w-9 text-xs mr-2 rounded-full">
+                            {authorImages[blogs[blogId].authorId] ? <AuthorImage profilePic={authorImages[blogs[blogId].authorId].image}/> : <ImageNotExist username={blogs[blogId].author.name.trim()[0].toUpperCase()} color={color.current}/>}
                     </div>
                     <div className="mt-3 text-md ">
                         <div className="flex ">
-                            <div className="font-mono text-slate-900 hover:underline hover:decoration-gray-900 hover:cursor-pointer">{oneBlog.author.name}</div>
+                            <div className="font-mono text-slate-900 hover:underline hover:decoration-gray-900 hover:cursor-pointer">{blogs[blogId].author.name}</div>
                             <div className="ml-2 text-gray-500 font-bold">·</div>
                             <div className="ml-2 font-mono text-slate-900 underline hover:decoration-gray-900 hover:cursor-pointer">Follow</div>
                         </div>
                         <div className="text-sm text-slate-500 font-medium flex">
                             <div>
-                                {date(oneBlog.date)}
+                                {date(blogs[blogId].date)}
                             </div>
                         </div>
                     </div>
                 </div>
                 <div className="flex py-2 border-y-1 border-gray-100 ">
                     <div>
-                       <Clap blogId={oneBlog.id}/>
+                       <Clap blogId={blogId} atomNumber={atomNumber} />
                     </div>
                     <div onClick={() => {
                         ref1.current?.scrollIntoView({behavior: "smooth"})
@@ -64,31 +63,28 @@ const OneBlog = memo(({ blogId }: {blogId: string}) => {
                                 <path className="" stroke="currentColor" strokeWidth={0.5} d="M1 8c0-3.43 3.262-6 7-6s7 2.57 7 6-3.262 6-7 6c-.423 0-.838-.032-1.241-.094-.9.574-1.941.948-3.06 1.06a.75.75 0 0 1-.713-1.14c.232-.378.395-.804.469-1.26C1.979 11.486 1 9.86 1 8Z" fill="none"/>
                             </svg>
                         </div>
-                        <div className="text-gray-600 text-sm mt-0.5 group-hover:text-gray-950">{oneBlog.numberOfComments}</div>
+                        <div className="text-gray-600 text-sm mt-0.5 group-hover:text-gray-950">{blogs[blogId].numberOfComments}</div>
                     </div>
                 </div>
-                
-                <div className={`${oneBlog.imageExist ? "" : "hidden"} mt-15`}>
-                    <Image blogId={blogId} />
+                <div className={`${blogs[blogId].imageExist ? "" : "hidden"} mt-15`}>
+                    <Image blogId={blogId} atomNumber={atomNumber} />
                 </div>
                 <div className="mt-10 border-b-1 border-gray-100 pb-15 ">
-                    <div className="text-md sm:text-lg md:text-xl mx-2" dangerouslySetInnerHTML={{ __html: oneBlog.content }}/>
+                    <div className="text-md sm:text-lg md:text-xl mx-2" dangerouslySetInnerHTML={{ __html: blogs[blogId].content }}/>
                 </div> 
                 <div ref={ref1} className="mt-15 text-2xl font-semibold mb-10">
-                    Responses ({oneBlog.numberOfComments})
+                    Responses ({blogs[blogId].numberOfComments})
                 </div>
                 <div className=" flex"> 
-                    <div className={`hover:cursor-pointer mr-3 w-9 h-9 text-center p-5 rounded-full flex justify-center`} style={{background: randomColor()}} >
-                        <div className="flex flex-col justify-center text-white text-lg">
-                            {localStorage.getItem("username")?.[0]}
-                        </div>
+                    <div className="h-9 w-9 text-xs mr-2 rounded-full">
+                            {sessionStorage.getItem("profilePicExist") ? <AuthorImage profilePic={sessionStorage.getItem("profilePic") || ""} /> : <ImageNotExist username={(sessionStorage.getItem("username") || "a").toUpperCase()} color={color.current}/>}
                     </div>
                     <div className=" text-md font-mono mt-2">
-                        {localStorage.getItem("username")}
+                        {sessionStorage.getItem("username")}
                     </div>
                 </div>
                 <div className="border-b-1 border-gray-100 pb-8 mb-8 mt-6">
-                    <CommentUpload blogId={oneBlog.id} />
+                    <CommentUpload blogId={blogId} atomNumber={atomNumber} />
                 </div>
                 <div>
                     {comments ? 
@@ -105,3 +101,22 @@ const OneBlog = memo(({ blogId }: {blogId: string}) => {
 
 export default OneBlog;
 
+const AuthorImage = memo(({profilePic}: {profilePic: File | string }) => {
+    if (profilePic instanceof(File)){
+        profilePic = URL.createObjectURL(profilePic);
+    }
+    return (
+        <img src={profilePic} className="w-full h-full rounded-full" />
+    )
+})
+
+const ImageNotExist = memo(({username, color}:{username: string, color: string}) => {
+    return(
+        <div className="w-full h-full text-sm text-white rounded-full flex justify-center items-center" style={{background: color}}>
+                {username}
+        </div>
+    )
+})
+{/* <div className="h-6 w-6 text-xs mr-2 rounded-full">
+        {authorImages[blog.authorId] ? <Image profilePic={authorImages[blog.authorId].image}/> : <ImageNotExist username={blog.author.name.trim()[0].toUpperCase()} color={color.current}/>}
+</div> */}

@@ -3,6 +3,7 @@ import SearchBar from "./SearchBar";
 import { useSetRecoilState } from "recoil";
 import { htmlContent, preview } from "../store/blogUploadEdit/atom";
 import { memo, useEffect, useRef, useState } from "react";
+import randomColor from "./randomColor";
 
 
 const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: {searchBar: boolean, write: boolean, publish: boolean, edit:boolean, notifications: boolean}) => {
@@ -15,7 +16,7 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
     const lastScroll = useRef<number> (0);
     const [param] = useSearchParams()
     const myBlogId = param.get("myBlogId")
-
+    const color = useRef<string>(randomColor())
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropDown==true){
@@ -120,9 +121,9 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
                     </div>
 
                     <div ref={buttonRef} onClick={() => {
-                                setDropDown(p => !p);
-                    }} className="mr-3 sm:mr-6.5 bg-red-600 h-8 w-8 text-center rounded-full p-1 hover:cursor-pointer">
-                        V
+                            setDropDown(p => !p);
+                    }} className="h-8 w-8 text-xs rounded-full mr-3 sm:mr-6.5 p-1 hover:cursor-pointer">
+                            {sessionStorage.getItem("profilePicExist") ? <AuthorImage profilePic={sessionStorage.getItem("profilePic") || ""}/> : <ImageNotExist username={(sessionStorage.getItem("username") || "a").toUpperCase()} color={color.current}/>}
                     </div>
                     <div ref={dropDownElement}
                     className={`
@@ -224,3 +225,23 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
 
 
 export default AppbarComponent;
+
+const AuthorImage = memo(({profilePic}: {profilePic: File | string }) => {
+    if (profilePic instanceof(File)){
+        profilePic = URL.createObjectURL(profilePic);
+    }
+    return (
+        <img src={profilePic} className="w-full h-full rounded-full" />
+    )
+})
+
+const ImageNotExist = memo(({username, color}:{username: string, color: string}) => {
+    return(
+        <div className="w-full h-full text-sm text-white rounded-full flex justify-center items-center" style={{background: color}}>
+                {username}
+        </div>
+    )
+})
+{/* <div className="h-6 w-6 text-xs mr-2 rounded-full">
+        {authorImages[blog.authorId] ? <Image profilePic={authorImages[blog.authorId].image}/> : <ImageNotExist username={blog.author.name.trim()[0].toUpperCase()} color={color.current}/>}
+</div> */}

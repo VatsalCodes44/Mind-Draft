@@ -54,7 +54,7 @@ const Publish = memo(() => {
             const response = await axios.post("http://localhost:8787/api/v1/blog/upload",formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                    "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
                 },
             })
             
@@ -84,9 +84,9 @@ const Publish = memo(() => {
                                 likes: 0,
                                 numberOfComments: 0,
                                 author: {
-                                    name: window.localStorage.getItem("username")
+                                    name: window.sessionStorage.getItem("username")
                                 },
-                                authorId: window.localStorage.getItem("userId")
+                                authorId: window.sessionStorage.getItem("userId")
                             }
                             ,...previous
                         }

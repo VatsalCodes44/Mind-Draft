@@ -1,12 +1,9 @@
-import { memo, Suspense, useEffect, useRef, useState } from "react";
+import { memo, Suspense, useRef, useState } from "react";
 import randomColor from "../components/randomColor";
 import Profile from "../components/Profile";
 import Appbar from "../components/Appbar";
 import MyBlogs from "../components/MyBlogs";
 import BlogsLoader from "../components/BlogsLoader";
-import axios from "axios";
-import { useSetRecoilState } from "recoil";
-import { userProfilePic } from "../store/userInfo/atom";
 import UserProfile from "../components/UserProfile";
 import { useNavigate } from "react-router-dom";
 const Me = memo(() => {
@@ -14,21 +11,6 @@ const Me = memo(() => {
     const navigate = useNavigate()
     const [homeDraftsLibrary, setHomeDraftsLibrary] = useState<"home" | "drafts" | "library">("home")
 
-    async function fetchProfilePic(){
-        const response = await axios.post("http://localhost:8787/api/v1/user/userImage",{
-            userId: window.localStorage.getItem("userId")
-        }, {
-            headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
-            },
-        })
-        setUserImage(response.data.image)
-        window.localStorage.setItem("profilePic", response.data.image)
-    }
-    const setUserImage = useSetRecoilState(userProfilePic)
-        useEffect(()=>{
-            fetchProfilePic()
-        },[])
     return (
         <div className="w-full h-screen">
             <Appbar searchBar={true} edit={false} write={true} publish={false}  notifications={true}/>
@@ -99,12 +81,12 @@ const Me = memo(() => {
 })
 
 export default Me;
-                    // <div className="flex justify-center">
-                    //     <div className={` w-30 h-30 rounded-full flex justify-center items-center text-5xl text-white`} style={{background: color.current.toString()}} >
-                    //         {/* {oneBlog.author.name[0].toUpperCase()} */}
-                    //         V
-                    //     </div>
-                    // </div>
-                    // <div className="text-gray-700 flex justify-center">
-                    //     2 followers
-                    // </div>
+// <div className="flex justify-center">
+//     <div className={` w-30 h-30 rounded-full flex justify-center items-center text-5xl text-white`} style={{background: color.current.toString()}} >
+//         {/* {oneBlog.author.name[0].toUpperCase()} */}
+//         V
+//     </div>
+// </div>
+// <div className="text-gray-700 flex justify-center">
+//     2 followers
+// </div>

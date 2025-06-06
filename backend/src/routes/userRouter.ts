@@ -140,12 +140,76 @@ userRouter.post('/signin', async (c) => {
 
 
 
+async function streamToArrayBuffer(stream: ReadableStream): Promise<ArrayBuffer> {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+
+  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+  const combined = new Uint8Array(totalLength);
+
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return combined.buffer;
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const uint8Array = new Uint8Array(buffer);
+  let binary = '';
+  uint8Array.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary); // btoa() is the browser function for Base64 encoding
+}
+
+// return a no. of images with array of blogIds.
+userRouter.post("/userImage", async (c) => {
+  try {
+    const body: { userId: string } = await c.req.json();
+    const userId = body.userId;
+    const response = z.string().safeParse(userId)
+    if (!response.success) {
+    return c.json({
+      message: response.error.issues[0].message
+    }, 403)
+  }
+    const r2Object = await c.env.MY_BUCKET.get(userId);
+    if (!r2Object || !r2Object.body) return c.json({message: "profile not exist"}, 403)
+
+    const arrayBuffer = await streamToArrayBuffer(r2Object.body);
+    const base64 = arrayBufferToBase64(arrayBuffer);
+    const contentType = r2Object.httpMetadata?.contentType || "image/jpeg";
+
+    const image = `data:${contentType};base64,${base64}`
+    
+
+
+    return c.json({
+      image
+    });
+
+  } catch (err) {
+    return c.json({ message: "internal error" }, 500);
+  }
+});
+
+userRouter.use("/*", jwtVerification)
+
+
 const updateUserSchema = z.object({
   image: z.instanceof(File).optional().nullable(),
   name: z.string(),
   aboutMe: z.string()
 })
-userRouter.use("/*", jwtVerification)
 userRouter.put("/updateUser", async (c) => {
   const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
   const formData: FormData = await c.req.formData()
@@ -241,67 +305,5 @@ userRouter.put("/updateUser", async (c) => {
 
 })
 
-
-async function streamToArrayBuffer(stream: ReadableStream): Promise<ArrayBuffer> {
-  const reader = stream.getReader();
-  const chunks: Uint8Array[] = [];
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (value) chunks.push(value);
-  }
-
-  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-  const combined = new Uint8Array(totalLength);
-
-  let offset = 0;
-  for (const chunk of chunks) {
-    combined.set(chunk, offset);
-    offset += chunk.length;
-  }
-
-  return combined.buffer;
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const uint8Array = new Uint8Array(buffer);
-  let binary = '';
-  uint8Array.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-  return btoa(binary); // btoa() is the browser function for Base64 encoding
-}
-
-// return a no. of images with array of blogIds.
-userRouter.post("/userImage", async (c) => {
-  try {
-    const body: { userId: string } = await c.req.json();
-    const userId = body.userId;
-    const response = await z.string().safeParse(userId)
-    if (!response.success) {
-    return c.json({
-      message: response.error.issues[0].message
-    }, 403)
-  }
-    const r2Object = await c.env.MY_BUCKET.get(userId);
-    if (!r2Object || !r2Object.body) return c.json({message: "profile not exist"}, 403)
-
-    const arrayBuffer = await streamToArrayBuffer(r2Object.body);
-    const base64 = arrayBufferToBase64(arrayBuffer);
-    const contentType = r2Object.httpMetadata?.contentType || "image/jpeg";
-
-    const image = `data:${contentType};base64,${base64}`
-    
-
-
-    return c.json({
-      image
-    });
-
-  } catch (err) {
-    return c.json({ message: "internal error" }, 500);
-  }
-});
 
 export default userRouter;

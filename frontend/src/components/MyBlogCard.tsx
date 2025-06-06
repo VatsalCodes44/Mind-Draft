@@ -4,7 +4,6 @@ import ImageLoader from "./ImageLoader";
 import date from "./date";
 import MyBlogsImage from "./MyBlogsImage";
 import { useRecoilValue } from "recoil";
-import { userProfilePic } from "../store/userInfo/atom";
 import randomColor from "./randomColor";
 
 
@@ -27,7 +26,7 @@ interface Blog {
 
 const MyBlogCard = memo(({myBlog, homeDraftsLibrary}: {myBlog: Blog, homeDraftsLibrary: string}) => {
     const navigate = useNavigate()
-    const profilePic = useRecoilValue(userProfilePic)
+    const profilePic = sessionStorage.getItem("profilePic")
     const color = useRef<string>(randomColor())
 
     const likeCountFormatter = new Intl.NumberFormat('en', {
@@ -53,13 +52,12 @@ const MyBlogCard = memo(({myBlog, homeDraftsLibrary}: {myBlog: Blog, homeDraftsL
                             {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={myBlog.author.name.trim()[0].toUpperCase()} color={color.current}/>}
                         </div>
                         <div className="font-mono font-thin hover:underline hover:underline-offset-2 pt-0.5">
-                            {myBlog.author.name.length > 15 ? `${myBlog.author.name.slice(0,15)}.` : myBlog.author.name } 
+                            {myBlog.author.name.length > 30 ? `${myBlog.author.name.slice(0,30)}.` : myBlog.author.name }
                         </div>
                     </div>
                     <div className="grid grid-cols-6 mt-2 hover:cursor-pointer" onClick={ () => {
                         navigate(`/myBlog?myBlogId=${myBlog.id}`)
                         window.scrollTo(0,0);
-                        // setEditBlog(myBlog)
                     }}>
                         <div className="col-span-4 ">
                             <div className="text-md sm:text-lg md:text-2xl text-gray-800 font-bold">
@@ -79,9 +77,8 @@ const MyBlogCard = memo(({myBlog, homeDraftsLibrary}: {myBlog: Blog, homeDraftsL
                         </div>
                     </div>
                     <div onClick={ () => {
-                        navigate(`/blog?MyBlogId=${myBlog.id}`)
+                        navigate(`/myBlog?myBlogId=${myBlog.id}`)
                         window.scrollTo(0,0);
-                        // setEditBlog(myBlog)
                     }}
                     className=" flex mt-5 text-slate-600 text-xs font-semibold">
                         <div className=" ml-4 mt-1 ">
@@ -120,7 +117,7 @@ const Image = memo(({profilePic}: {profilePic: File | string }) => {
 
 const ImageNotExist = memo(({username, color}:{username: string, color: string}) => {
     return(
-        <div className="w-full h-full text-lg sm:text-3xl text-white rounded-full flex justify-center items-center" style={{background: color}}>
+        <div className="w-full h-full text-sm text-white rounded-full flex justify-center items-center" style={{background: color}}>
                 {username}
         </div>
     )

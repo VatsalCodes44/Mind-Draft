@@ -1,5 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react"
+import { useSetRecoilState } from "recoil";
+import { blogAtomFamily } from "../store/blogs/atom";
 
 type blogs = {
         id: string,
@@ -19,7 +21,7 @@ export function useBlogs(): blogs {
         async function fetchBlogs () {
             const res = await axios.get("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/bulk",{
                 headers: {
-                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
+                    Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 }
             })
             setBlogs(res.data.response)
@@ -53,7 +55,7 @@ export function useBlog( blogId: string ) {
         async function fetchBlog () {
             const res = await axios.get(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/get/${blogId}`,{
                 headers: {
-                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
+                    Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 }
             })
             setBlog(res.data)
@@ -73,7 +75,7 @@ export function useImage(blogId: string){
                 blogId,
             }, {
             headers: {
-                "Authorization": `Bearer ${window.localStorage.getItem("token")}`,
+                "Authorization": `Bearer ${window.sessionStorage.getItem("token")}`,
             },
             "responseType": 'blob'
             }).then( async (res) => {
@@ -84,7 +86,8 @@ export function useImage(blogId: string){
     return imageUrl;
 }
 
-export function useClapDebounce(blogId:string, likes: number, firstRender: boolean, setFirstRender: React.Dispatch<React.SetStateAction<boolean>>){
+export function useClapDebounce(blogId:string, likes: number, firstRender: boolean, setFirstRender: React.Dispatch<React.SetStateAction<boolean>>, atomNumber: number){
+    const setBlogs = useSetRecoilState(blogAtomFamily(atomNumber))
     useEffect(() => {
         if (firstRender){
             setFirstRender(false)
@@ -95,12 +98,45 @@ export function useClapDebounce(blogId:string, likes: number, firstRender: boole
                     likes
                 }, {
                     headers: {
-                        Authorization: `Bearer ${window.localStorage.getItem("token")}`
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                     }
+                }).then(() => {
+                    setBlogs((previous) => {
+                        return {...previous, [blogId]:{
+                                ...previous[blogId],
+                                likes
+                            }
+                        }
+                    })
                 }).catch(() => {
                 })
 
-            }, 5000)
+            }, 1000)
+
+            return () => {
+                clearTimeout(timeout)
+            }
+        }
+    }, [likes, setBlogs])
+}
+
+
+export function useMyClapDebounce(blogId:string, likes: number, firstRender: boolean, setFirstRender: React.Dispatch<React.SetStateAction<boolean>>){
+    useEffect(() => {
+        if (firstRender){
+            setFirstRender(false)
+        } else{
+            const timeout = setTimeout(async() => {
+            axios.post("http://localhost:8787/api/v1/blog/likesUpdate",{
+                    blogId,
+                    likes
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }
+                })
+
+            }, 1000)
 
             return () => {
                 clearTimeout(timeout)

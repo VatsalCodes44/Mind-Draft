@@ -61,15 +61,15 @@ const SignupAuth = memo(() => {
                         }
                     } = await axios.post("http://127.0.0.1:8787/api/v1/user/signup", signupInput)
                     if (response) {
-                        window.localStorage.setItem("token",response.data.jwt)
-                        window.localStorage.setItem("username", response.data.user.name)
-                        window.localStorage.setItem("email", response.data.user.email)
-                        window.localStorage.setItem("userId",response.data.user.id)
+                        window.sessionStorage.setItem("token",response.data.jwt)
+                        window.sessionStorage.setItem("username", response.data.user.name)
+                        window.sessionStorage.setItem("email", response.data.user.email)
+                        window.sessionStorage.setItem("userId",response.data.user.id)
                         if (response.data.user.aboutMe){
-                            window.localStorage.setItem("aboutMe",response.data.user.aboutMe)
+                            window.sessionStorage.setItem("aboutMe",response.data.user.aboutMe)
                         }
                         if (response.data.user.profilePicExist){
-                            window.localStorage.setItem("userId",response.data.user.id)
+                            window.sessionStorage.setItem("userId",response.data.user.id)
                         }
                         navigate("/blogs")
                      }

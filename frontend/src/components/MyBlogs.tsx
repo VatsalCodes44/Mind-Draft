@@ -1,8 +1,7 @@
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import {  getMyBlogsObjectAtom, getMyImagesObjectAtom, imagesFetch } from "../store/blogs/atom";
-import { memo, useEffect } from "react";
+import { useRecoilValue } from "recoil";
+import { getMyBlogsObjectAtom } from "../store/blogs/atom";
+import { memo } from "react";
 import MyBlogCard from "./MyBlogCard";
-import axios from "axios";
 
 const MyBlogs = memo(({homeDraftsLibrary}: {homeDraftsLibrary: string}) => {
     const myBlogsObject = useRecoilValue(getMyBlogsObjectAtom)
@@ -12,7 +11,7 @@ const MyBlogs = memo(({homeDraftsLibrary}: {homeDraftsLibrary: string}) => {
                 {
                 Object.keys(myBlogsObject).map((id) => {
                     return (
-                        <div key={myBlogsObject[id].id}>
+                        <div key={`${myBlogsObject[id]}${id}`}>
                             <MyBlogCard myBlog={myBlogsObject[id]} homeDraftsLibrary={homeDraftsLibrary}/>
                         </div>
                     )

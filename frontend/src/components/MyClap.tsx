@@ -1,23 +1,37 @@
-import { memo, useState } from "react";
-import { myBlogAtomFamily } from "../store/blogs/atom";
+import { memo, useEffect, useRef, useState } from "react";
+import { getMyBlogsObjectAtom } from "../store/blogs/atom";
 import { useRecoilState } from "recoil";
-import { useClapDebounce } from "../hooks";
+import { useMyClapDebounce } from "../hooks";
 
 
 const MyClap = memo(({blogId}: {blogId: string}) => {
     const [clap, setClapped] = useState <boolean> (false)
-    const [blog,setBlog] = useRecoilState(myBlogAtomFamily(blogId))
+    const [myBlogs,setmyBlogs] = useRecoilState(getMyBlogsObjectAtom)
     const [firstRender, setFirstRender] = useState<boolean>(true)
     const likeCountFormatter = new Intl.NumberFormat('en-US')
-    useClapDebounce(blogId, blog.likes, firstRender, setFirstRender)
+    const likes = useRef<number>(myBlogs[blogId].likes)
+    const [renderLikes, setRenderLikes] = useState<number>(myBlogs[blogId].likes)
+    useMyClapDebounce(blogId, likes.current, firstRender, setFirstRender)
+    useEffect(() => {
+
+        return () => {
+            setmyBlogs(p => {
+                return {
+                    ...p, [blogId]: {
+                        ...p[blogId],
+                        likes: likes.current
+                    }
+                }
+            })
+        }
+    }, [])
     return (
         <div className="flex hover:cursor-pointer">
             <div >
                 <button onClick={ () => {
                     setClapped(true)
-                    setBlog((previous) => {
-                        return {...previous, likes: previous.likes+1 }
-                    })
+                    likes.current += 1;
+                    setRenderLikes(p => p+1)
                 }} >
                     <svg width="24" height="24" viewBox="0 0 24 24" className="group hover:cursor-pointer active:animate-ping" >
                         <path fill={clap ? "currentColor" : "none"} className={` ${clap ? "text-gray-600 group-hover:text-gray-950" : " stroke-gray-600 group-hover:stroke-gray-950" }`} stroke="currentColor" strokeWidth={0.5} d="M11.37.828 12 3.282l.63-2.454zM15.421 1.84l-1.185-.388-.338 2.5zM9.757 1.452l-1.184.389 1.523 2.112zM20.253 11.84 17.75 7.438c-.238-.353-.57-.584-.93-.643a.96.96 0 0 0-.753.183 1.13 1.13 0 0 0-.443.695c.014.019.03.033.044.053l2.352 4.138c1.614 2.95 1.1 5.771-1.525 8.395a7 7 0 0 1-.454.415c.997-.13 1.927-.61 2.773-1.457 2.705-2.704 2.517-5.585 1.438-7.377M12.066 9.01c-.129-.687.08-1.299.573-1.773l-2.062-2.063a1.123 1.123 0 0 0-1.555 0 1.1 1.1 0 0 0-.273.521z"></path>
@@ -25,7 +39,7 @@ const MyClap = memo(({blogId}: {blogId: string}) => {
                     </svg>
                 </button> 
             </div>
-            <div className="text-gray-600 hover:text-gray-950 text-sm pt-0.5 ml-1">{likeCountFormatter.format(blog.likes)}</div>
+            <div className="text-gray-600 hover:text-gray-950 text-sm pt-0.5 ml-1">{likeCountFormatter.format(renderLikes)}</div>
         </div>
     )
 })

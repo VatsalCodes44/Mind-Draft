@@ -1,24 +1,23 @@
 import { memo, useRef } from "react";
-import { userInfo as uInfo, userProfilePic } from "../store/userInfo/atom";
-import { useRecoilValue } from "recoil";
 import randomColor from "./randomColor";
 
 
 const UserProfile = memo(() => {
     const color = useRef<string>(randomColor())
-    const userInfo = useRecoilValue(uInfo)
-    const profilePic = useRecoilValue(userProfilePic)
+    const profilePic = sessionStorage.getItem("profilePic")
+    const username = sessionStorage.getItem("username")
+    const aboutMe = sessionStorage.getItem("aboutMe")
       
     return (
         <div className="text-block">
             <div className="flex justify-center">
-                {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={userInfo.name.trim()[0].toUpperCase()} color={color.current} />}
+                {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={username ? username.trim()[0].toUpperCase() : ""} color={color.current} />}
             </div>
             <div className="flex gap-2 mt-4 text-lg font-semibold font-mono">
-                {userInfo.name}
+                {username}
             </div>
             <div className={` mt-4 `}>
-                {userInfo.aboutMe}
+                {aboutMe}
             </div>
             
         </div>

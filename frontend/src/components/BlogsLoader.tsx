@@ -1,9 +1,8 @@
 import { memo } from "react";
 import ImageLoader from "./ImageLoader";
-import Appbar from "./Appbar";
 
 
-const BlogLoader = memo(() => {
+export const BlogsLoaderChild = memo(() => {
     return(
         <div className=" flex justify-center pt-4 sm:pt-0">
                 <div className="max-w-3xl w-3xl border-b-1 border-slate-100 mt-4 pb-6 hover:cursor-pointer">
@@ -39,9 +38,9 @@ const BlogLoader = memo(() => {
 const BlogsLoader = memo(() => {
     return(
         <div className="">
-            <BlogLoader />
-            <BlogLoader />
-            <BlogLoader />
+            <BlogsLoaderChild />
+            <BlogsLoaderChild />
+            <BlogsLoaderChild />
         </div>
     )
 })

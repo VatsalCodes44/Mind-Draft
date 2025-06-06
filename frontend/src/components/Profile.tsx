@@ -1,6 +1,4 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { useRecoilValue } from "recoil";
-import { userInfo as uInfo, userProfilePic } from "../store/userInfo/atom";
 import { useNavigate } from "react-router-dom";
 
 
@@ -10,8 +8,9 @@ const Profile = memo(({color}: {color:string}) => {
     const dropDownElement = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLDivElement>(null)
     const lastScroll = useRef<number> (0);
-    const userInfo = useRecoilValue(uInfo)
-    const profilePic = useRecoilValue(userProfilePic)
+    const profilePic = sessionStorage.getItem("profilePic")
+    const username = sessionStorage.getItem("username")
+
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropDownElement.current && !dropDownElement.current.contains(event.target as Node) && buttonRef.current && !buttonRef.current.contains(event.target as Node) && dropDown==true) {
@@ -37,13 +36,13 @@ const Profile = memo(({color}: {color:string}) => {
 
             <div className="flex gap-4">
                 <div className="w-15 h-15 sm:w-20 sm:h-20 rounded-full " style={{background: color}} >
-                    {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={userInfo.name.trim()[0].toUpperCase()} color={color}/>}
+                    {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={ username ? username.trim()[0].toUpperCase() : ""} color={color}/>}
                 </div>
 
                 <div className="flex items-center">
                     <div>
                         <div className="w-full text-lg sm:text-2xl flex justify-center font-mono items-center font-semibold text-slate-900 lg:text-4xl lg:font-semibold">
-                            {userInfo.name}
+                            {sessionStorage.getItem("username")}
                         </div>
                         <div className="text-gray-700 lg:hidden text-sm sm:text-md">
                             {2} followers

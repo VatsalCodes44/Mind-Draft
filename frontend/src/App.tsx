@@ -5,11 +5,11 @@ import Signin from "./pages/Signin"
 import Blogs from "./pages/Blogs"
 import Blog from "./pages/Blog"
 import { RecoilRoot } from "recoil"
-import Random from "./pages/Random"
 import Me from "./pages/Me"
 import MyBlog from "./pages/MyBlog"
 import EditProfile from "./components/EditProfile"
 import UpdateProfile from "./pages/UpdateProfile"
+import Random from "./pages/Random"
 
 const Upload = React.lazy( () => {
   return import("./pages/Upload")
@@ -35,7 +35,7 @@ function App() {
                 <Route path= "/me"      element = {<Me/>} />
                 <Route path= "/myBlog"  element = {<MyBlog/>} />
                 <Route path= "/updateProfile"  element = {<UpdateProfile/>} />
-                <Route path= "/random"  element = {<EditProfile/>} />
+                <Route path= "/random"  element = {<Random/>} />
               </Routes>
           </BrowserRouter>
         </RecoilRoot>

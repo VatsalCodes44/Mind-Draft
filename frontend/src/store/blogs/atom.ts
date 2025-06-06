@@ -27,13 +27,17 @@ const getBlogsObjectAtom = atom <BlogsObject> ({
     default: selector({
         key: "getBlogsSelectorAtom",
         get: async () => {
-            const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/firstBulk",{
-                headers: {
-                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
-                }, "responseType": "json"
-            })
-            const blogs = response.data
-            return blogs
+            try{
+                const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/firstBulk",{
+                    headers: {
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }, "responseType": "json"
+                })
+                const blogs = response.data
+                return blogs
+            } catch {
+                return {}
+            }
         }
     })
 })
@@ -51,51 +55,75 @@ const getImagesObjectAtom = atom <ImagesObject> ({
     default: selector({
         key: "getImagesObjectAtomSelector",
         get: async ({get}: {get: GetRecoilValue}) => {
-            const blogs = get(getBlogsObjectAtom)
-            const blogIds = Object.keys(blogs).filter((id) => {
-                if (blogs[id].imageExist){
-                    return true;
-                } else {
-                    return false;
-                }
-            })
-            const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
-                blogIds,
-            },{
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
-                }
-            })
-            return response.data
+            try {
+                const blogs = get(getBlogsObjectAtom)
+                const blogIds = Object.keys(blogs).filter((id) => {
+                    if (blogs[id].imageExist){
+                        return true;
+                    } else {
+                        return false;
+                    }
+                })
+                const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                    blogIds,
+                },{
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }
+                })
+                return response.data
+            } catch {
+                return {}
+            }
+        }
+    })
+})
+const getAuthorImagesObjectAtom = atom <ImagesObject> ({
+    key: "getAuthorImagesObjectAtom",
+    default: selector({
+        key: "getAuthorImagesObjectAtomSelector",
+        get: async ({get}: {get: GetRecoilValue}) => {
+            try {
+                const blogs = get(getBlogsObjectAtom)
+                const authorIds = Object.values(blogs).map(blog => {
+                    return blog.authorId
+                })
+                const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                    blogIds: authorIds,
+                },{
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }
+                })
+                return response.data
+            } catch {
+                return {}
+            }
         }
     })
 })
 
 
-// const blogAtomFamily = atomFamily<BlogsObject, number>({
-//     key: "blogAtomFamily123",
-// })
-const blogAtomFamily = atomFamily({
+const blogAtomFamily = atomFamily<BlogsObject, number>({
     key: "blogAtomFamily123",
-    default: selectorFamily({
-        key: "blogAtomSelectorFamily456",
-        get: (id: string) => ({get}: {get: GetRecoilValue}) => {
-            const blogsObject = get(getBlogsObjectAtom)
-            return blogsObject[id]          
-        }
-    })
+    default: {}
 })
 
-const imageAtomFamily = atomFamily({
+const isFirstBlogsBundleSet = atom<boolean>({
+    key: "isFirstBlogsBundleSet",
+    default: false
+})
+
+const imageAtomFamily = atomFamily<ImagesObject, number>({
     key: "imageAtomFamily",
-    default: selectorFamily({
-        key: "imageAtomSelectorFamily",
-        get: (id: string) => ({get}: {get: GetRecoilValue}) => {
-            const imagesObject = get(getImagesObjectAtom)
-            return imagesObject[id]          
-        }
-    })
+    default: {}
+})
+
+const authorImageAtomFamily = atomFamily<ImagesObject, number>({
+    key: "authorImageAtomFamily",
+    default: {}
 })
 
 
@@ -112,7 +140,7 @@ const getMyBlogsObjectAtom = atom <BlogsObject> ({
             console.log("here i am")
             const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/myBlogs",{
                 headers: {
-                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
+                    Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 }, "responseType": "json"
             })
             const blogs = response.data
@@ -155,7 +183,7 @@ const getMyImagesObjectAtom = atom <ImagesObject> ({
             },{
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
+                    Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 }
             })
             return response.data 
@@ -214,5 +242,5 @@ const commentsDataAtom = atom <Comments>({
 //     })
 // })
 
-export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentsDataAtom, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, imagesFetch}
+export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentsDataAtom, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, imagesFetch, isFirstBlogsBundleSet, getAuthorImagesObjectAtom, authorImageAtomFamily}
 

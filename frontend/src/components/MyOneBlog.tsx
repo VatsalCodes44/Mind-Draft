@@ -5,21 +5,23 @@ import date from "./date";
 import { memo, useEffect, useRef } from "react";
 import axios from "axios";
 import Comments from "./Comments";
-import CommentUpload from "./CommentUpload";
 import MyImage from "./MyImage";
 import MyClap from "./MyClap";
-const color = randomColor()
+import MyCommentUpload from "./MyCommentUpload";
 
 const MyOneBlog = memo(({ myBlogId }: {myBlogId: string}) => {
+    const color = useRef<string>(randomColor())
     const ref1 = useRef<HTMLDivElement>(null);
     const oneBlog = useRecoilValue(myBlogAtomFamily(myBlogId));
     const [comments, setComments] = useRecoilState(commentsDataAtom);
+    const profilePic = sessionStorage.getItem("profilePic")
+    const username = sessionStorage.getItem("username")
     useEffect(() => {
         const getComments = async () => {
             const res = await axios.get("http://localhost:8787/api/v1/blog/getComments", {
                 headers: {
                     blogId: myBlogId,
-                    Authorization: `Bearer ${window.localStorage.getItem("token")}`
+                    Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 }
             })
             setComments(res.data)
@@ -33,13 +35,13 @@ const MyOneBlog = memo(({ myBlogId }: {myBlogId: string}) => {
                         {oneBlog.title}
                     </div>
                 </div>
-                <div className=" flex my-8 pb-">
-                    <div className={`hover:cursor-pointer mr-3 mt-3 w-9 h-9 text-center p-5 rounded-full flex justify-center`} style={{background: color}} >
-                        <div className="flex flex-col justify-center text-white text-lg">
-                            {oneBlog.author.name[0].toUpperCase()}
+                <div className=" flex my-8 ">
+                    <div className="hover:cursor-pointer mr-3 text-center rounded-full flex justify-center items-center" >
+                        <div className="h-9 w-9 text-md rounded-full">
+                                {profilePic ? <AuthorImage profilePic={profilePic}/> : <ImageNotExist username={username ? username[0].toUpperCase() : ""} color={color.current}/>}
                         </div>
                     </div>
-                    <div className="mt-3 text-md ">
+                    <div className="text-md ">
                         <div className="flex ">
                             <div className="font-mono text-slate-900 hover:underline hover:decoration-gray-900 hover:cursor-pointer">{oneBlog.author.name}</div>
                             <div className="ml-2 text-gray-500 font-bold">·</div>
@@ -78,17 +80,17 @@ const MyOneBlog = memo(({ myBlogId }: {myBlogId: string}) => {
                     Responses ({oneBlog.numberOfComments})
                 </div>
                 <div className=" flex"> 
-                    <div className={`hover:cursor-pointer mr-3 w-9 h-9 text-center p-5 rounded-full flex justify-center`} style={{background: randomColor()}} >
-                        <div className="flex flex-col justify-center text-white text-lg">
-                            {localStorage.getItem("username")?.[0]}
+                    <div className={`hover:cursor-pointer mr-3 text-center rounded-full flex justify-center`} >
+                        <div className="h-9 w-9 text-md rounded-full">
+                                {profilePic ? <AuthorImage profilePic={profilePic}/> : <ImageNotExist username={username ? username[0].toUpperCase() : ""} color={color.current}/>}
                         </div>
                     </div>
                     <div className=" text-md font-mono mt-2">
-                        {localStorage.getItem("username")}
+                        {sessionStorage.getItem("username")}
                     </div>
                 </div>
                 <div className="border-b-1 border-gray-100 pb-8 mb-8 mt-6">
-                    <CommentUpload blogId={oneBlog.id} />
+                    <MyCommentUpload blogId={oneBlog.id} />
                 </div>
                 <div>
                     {comments ? 
@@ -105,3 +107,20 @@ const MyOneBlog = memo(({ myBlogId }: {myBlogId: string}) => {
 
 export default MyOneBlog;
 
+const AuthorImage = memo(({profilePic}: {profilePic:string }) => {
+    console.log(profilePic)
+    return (
+        <img src={profilePic} className="w-full h-full rounded-full" />
+    )
+})
+
+const ImageNotExist = memo(({username, color}:{username: string, color: string}) => {
+    return(
+        <div className="w-full h-full text-sm text-white rounded-full flex justify-center items-center" style={{background: color}}>
+                {username}
+        </div>
+    )
+})
+{/* <div className="h-6 w-6 text-xs mr-2 rounded-full">
+        {authorImages[blog.authorId] ? <Image profilePic={AuthorImages[blog.authorId].image}/> : <ImageNotExist username={blog.author.name.trim()[0].toUpperCase()} color={color.current}/>}
+</div> */}

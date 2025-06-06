@@ -11,7 +11,7 @@ type Author = {
     name: string,
     email: string,
     aboutMe: string | undefined,
-    profilePicExist: boolean | undefined,
+    profilePicExist: boolean,
 }
 const SigninAuth = memo(() => {   
     const [signinInput, setSigninInput] = useState<signinBodySchemaType>({
@@ -48,26 +48,34 @@ const SigninAuth = memo(() => {
             
             <div className="">
                 <Button type={"singin"} onClick={async () => {
-                     const response: {
-                        data: {
-                            jwt: string,
-                            user: Author
+                    const response: {
+                    data: {
+                        jwt: string,
+                        user: Author
+                    }
+                    } = await axios.post("http://localhost:8787/api/v1/user/signin", signinInput)
+                    if (response) {
+                    console.log(response.data.user)
+                    window.sessionStorage.setItem("token",response.data.jwt)
+                    window.sessionStorage.setItem("username",response.data.user.name)
+                    window.sessionStorage.setItem("email",response.data.user.email)
+                    window.sessionStorage.setItem("userId",response.data.user.id)
+                    if (response.data.user.aboutMe){
+                        window.sessionStorage.setItem("aboutMe",response.data.user.aboutMe)
+                    }
+                    if (response.data.user.profilePicExist){
+                        window.sessionStorage.setItem("profilePicExist",response.data.user.profilePicExist.toString())
+                    }
+                    navigate("/blogs")
+                    }
+                    if (sessionStorage.getItem("profilePicExist")){
+                        const response2 = await axios.post("http://localhost:8787/api/v1/user/userImage",{
+                            userId: sessionStorage.getItem("userId")
+                        })
+                        if (response2) {
+                            window.sessionStorage.setItem("profilePic",response2.data.image)
                         }
-                     } = await axios.post("http://localhost:8787/api/v1/user/signin", signinInput)
-                     if (response) {
-                        console.log(response.data.user)
-                        window.localStorage.setItem("token",response.data.jwt)
-                        window.localStorage.setItem("username",response.data.user.name)
-                        window.localStorage.setItem("email",response.data.user.email)
-                        window.localStorage.setItem("userId",response.data.user.id)
-                        if (response.data.user.aboutMe){
-                            window.localStorage.setItem("aboutMe",response.data.user.aboutMe)
-                        }
-                        if (response.data.user.profilePicExist){
-                            window.localStorage.setItem("userId",response.data.user.id)
-                        }
-                        navigate("/blogs")
-                     }
+                    }
                 }} />
             </div>
         </div>

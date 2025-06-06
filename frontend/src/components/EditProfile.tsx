@@ -1,6 +1,5 @@
 import { memo, useCallback, useState } from "react";
 import EditAbout from "../components/EditAbout";
-import { userInfo as uInfo, userProfilePic } from "../store/userInfo/atom";
 import { useRecoilState, useResetRecoilState } from "recoil";
 import randomColor from "./randomColor";
 import axios from "axios";
@@ -10,10 +9,9 @@ import { useNavigate } from "react-router-dom";
 const EditProfile = memo(() => {
     const navigate = useNavigate()
     const [imageName,setImageName] = useState<string | null>()
-    const [userInfo, setUserInfo] = useRecoilState(uInfo)
-    const [profilePic, setProfilePic] = useRecoilState(userProfilePic)
-    const resetProfilePic = useResetRecoilState(userProfilePic)
-    
+    const [profilePic, setProfilePic] = useState<string | null | File>(sessionStorage.getItem("profilePic"))
+    const [username,setUsername] = useState<string>(sessionStorage.getItem("username") || "")
+    const [aboutMe, setAboutMe] = useState<string | undefined>(sessionStorage.getItem("aboutMe") || undefined)
     const [ring, setRing ] = useState <boolean> (false)
     const [clicked,setClicked] = useState <boolean>(false)
 
@@ -24,36 +22,36 @@ const EditProfile = memo(() => {
             formData.append("image", profilePic)
         }
         
-        formData.append("name", userInfo.name)
-        formData.append("aboutMe", userInfo.aboutMe)
+        formData.append("name", username)
+        formData.append("aboutMe", aboutMe || "")
         
         axios.put("http://localhost:8787/api/v1/user/updateUser",formData, {
           headers: {
             "Content-Type": "multipart/form-data",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
             },
         }).then( async () => {
             setRing(false)
             setClicked(false)
             navigate("/me")
 
-            window.localStorage.setItem("username", userInfo.name)
-            window.localStorage.setItem("aboutMe", userInfo.aboutMe)
+            window.sessionStorage.setItem("username", username)
+            window.sessionStorage.setItem("aboutMe", aboutMe || "")
             if (profilePic instanceof(File)){
-                window.localStorage.setItem("profilePicExist", "true")
-                window.localStorage.setItem("profilePic", URL.createObjectURL(profilePic))
+                window.sessionStorage.setItem("profilePicExist", "true")
+                window.sessionStorage.setItem("profilePic", URL.createObjectURL(profilePic))
             }
         }).catch(() => {
             setRing(false)
             setClicked(false)
             alert("Failed! try again")
         })
-      },[userInfo, profilePic])
+      },[username, imageName, profilePic, aboutMe])
       
     return (
         <div className="text-block ">
             <div className="flex justify-center">
-                {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={userInfo.name.trim()[0].toUpperCase()}/>}
+                {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={imageName ? imageName.trim()[0].toUpperCase() : ""}/>}
             </div>
             <div className="flex justify-center items-center space-x-2 mt-4">
                 <label htmlFor="uploadImage" className="w-fit text-sm bg-green-600 hover:bg-green-700 hover:cursor-pointer p-1 rounded-sm text-white flex text-center">Change Profile Photo </label>
@@ -69,7 +67,6 @@ const EditProfile = memo(() => {
                 <svg
                 onClick={() => {
                     setImageName(null)
-                    resetProfilePic()
                 }}
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 16 16"
@@ -82,15 +79,18 @@ const EditProfile = memo(() => {
             <div className="flex gap-2 mt-4 text-lg font-semibold">
                 <div className="text-gray-600">Username:</div>
                 <div className="w-full">
-                    <input type="text" className="w-full border-b-1 border-gray-300 focus:outline-none" value={userInfo.name} onChange={(e) => {
-                        setUserInfo(p => ({...p, name: e.target.value}))
+                    <input type="text" className="w-full border-b-1 border-gray-300 focus:outline-none" value={username} onChange={(e) => {
+                        setUsername(e.target.value)
                     }}/>
                 </div>
             </div>
             <div className={` mt-4`}>
-                <EditAbout/>
+                <EditAbout aboutMe={aboutMe} setAboutMe={setAboutMe} />
             </div>
-            <div className="flex justify-end mt-4">
+            <div className="flex justify-end gap-2 mt-4">
+                <button onClick={() => {
+                    navigate("/me")
+                }} className="text-gray-700 hover:cursor-pointer hover:underline hover:underline-offset-2 hover:decoration-gray-700"> Cancel </button>
                 <button onClick={clicked ? () => {
                 } : () => {
                     setRing(true)
