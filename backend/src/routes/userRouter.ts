@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { decode, sign, verify } from 'hono/jwt'
-import { createUser, findUser, client, userLogin, editBlog, editUser } from '../db/prismaFunctions';
+import { createUser, findUser, client, userLogin, editBlog, editUser, getUser } from '../db/prismaFunctions';
 import { signupBodySchema, signinBodySchema } from "common-medium-project";
 import {string, z} from "zod"
 import { jwtVerification } from '../middlewares/middlewares';
@@ -140,6 +140,9 @@ userRouter.post('/signin', async (c) => {
 
 
 
+
+userRouter.use("/*", jwtVerification)
+
 async function streamToArrayBuffer(stream: ReadableStream): Promise<ArrayBuffer> {
   const reader = stream.getReader();
   const chunks: Uint8Array[] = [];
@@ -182,27 +185,26 @@ userRouter.post("/userImage", async (c) => {
       message: response.error.issues[0].message
     }, 403)
   }
-    const r2Object = await c.env.MY_BUCKET.get(userId);
+  const r2Object = await c.env.MY_BUCKET.get(userId);
     if (!r2Object || !r2Object.body) return c.json({message: "profile not exist"}, 403)
-
+      
     const arrayBuffer = await streamToArrayBuffer(r2Object.body);
     const base64 = arrayBufferToBase64(arrayBuffer);
     const contentType = r2Object.httpMetadata?.contentType || "image/jpeg";
-
+    
     const image = `data:${contentType};base64,${base64}`
     
-
-
+    
+    
     return c.json({
       image
     });
-
+    
   } catch (err) {
     return c.json({ message: "internal error" }, 500);
   }
 });
 
-userRouter.use("/*", jwtVerification)
 
 
 const updateUserSchema = z.object({
@@ -249,7 +251,7 @@ userRouter.put("/updateUser", async (c) => {
     let created: boolean = false;
     let attempts = 0;
     const maxAttempts = 3
-
+    
     while (!created && attempts < maxAttempts ) {
       const response2 = await editUser(prisma, c.get("userId"), data)
       await new Promise(res => setTimeout(res, 300))
@@ -264,19 +266,19 @@ userRouter.put("/updateUser", async (c) => {
   }
 
   if (file){
-      const fileName: string = response.id;
-      try{
-        const r2Object = await c.env.MY_BUCKET.put(fileName, file)
+    const fileName: string = response.id;
+    try{
+      const r2Object = await c.env.MY_BUCKET.put(fileName, file)
         if (r2Object){
           return c.json({
             message: response.id
           })
         } else {
-
+          
           let imageUploaded: boolean = false;
           let attempts = 0;
           const maxAttempts = 3
-      
+          
           while (!imageUploaded && attempts < maxAttempts ) {
             const response2 = await c.env.MY_BUCKET.put(fileName, file);
             await new Promise(res => setTimeout(res, 300))
@@ -288,22 +290,46 @@ userRouter.put("/updateUser", async (c) => {
             }
             attempts++;
           }
-
+          
           return c.json({
           message: "user updated"
         },200) 
-        }
+      }
       } catch (err) {    
         return c.json({
           message: "user updated"
         },403)
       }
-  }
+    }
   return c.json({
     message: response.id
   })
 
 })
 
+userRouter.get('/getUser', async (c) => {
+  try {
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const userId = c.req.query("userId");
+    if (!userId){
+      return c.json({
+        message: "user not exist"
+      })
+    }
+
+    const user = await getUser(prisma, userId)
+    if (user) {
+      return c.json(user)
+    } else {
+      return c.json({
+        message: "user do not exist ff"
+      },403)
+    }
+  } catch (err) {
+    return c.json({
+      message: "user do not exist"
+    },403)
+  }
+})
 
 export default userRouter;

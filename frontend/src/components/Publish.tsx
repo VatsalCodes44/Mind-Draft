@@ -4,7 +4,7 @@ import { getImage, htmlContent as content, preview, summary as s, title as t, im
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import getDateTime from "./getDateTime";
-import { getMyBlogsObjectAtom, getMyImagesObjectAtom } from "../store/blogs/atom";
+import { myBlogAtomFamily, myImageAtomFamily } from "../store/blogs/atom";
 
 
 const Publish = memo(() => {
@@ -18,8 +18,8 @@ const Publish = memo(() => {
     const [ring, setRing ] = useState <boolean> (false)
     const [draftRing, setDraftRing] = useState <boolean>(false)
     const [clicked,setClicked] = useState <boolean>(false)
-    const [v,setMyblogsObject] = useRecoilState(getMyBlogsObjectAtom)
-    const setMyImagesObject = useSetRecoilState(getMyImagesObjectAtom)
+    const setMyblogs = useSetRecoilState(myBlogAtomFamily(1))
+    const setMyImages = useSetRecoilState(myImageAtomFamily(1))
     const navigate = useNavigate()
     
 
@@ -70,7 +70,7 @@ const Publish = memo(() => {
             if(response.data){
                 const message: string = response.data.message;
                 if (message){
-                    setMyblogsObject(previous =>{
+                    setMyblogs(previous =>{
                         return {
                             [response.data.message]:{
                                 id: message,
@@ -91,9 +91,8 @@ const Publish = memo(() => {
                             ,...previous
                         }
                     })
-                    await new Promise(() => setTimeout(()=> console.log(v), 3000))
                     if (image){
-                        setMyImagesObject(previous=>{
+                        setMyImages(previous=>{
                             return {
                                 ...previous,
                                 [message]: {
@@ -106,7 +105,6 @@ const Publish = memo(() => {
                 }
             }
         } catch(e) {
-            console.log(e)
             setRing(false)
             setDraftRing(false)
             setClicked(false)

@@ -46,7 +46,6 @@ const getBlogsObjectAtom = atom <BlogsObject> ({
     })
 })
 
-
 interface ImagesObject {
     [id: string]: {
         id: string,
@@ -114,7 +113,6 @@ const getAuthorImagesObjectAtom = atom <ImagesObject> ({
     })
 })
 
-
 const blogAtomFamily = atomFamily<BlogsObject, number>({
     key: "blogAtomFamily123",
     default: {}
@@ -139,10 +137,8 @@ const authorImageAtomFamily = atomFamily<ImagesObject, number>({
 
 
 
-
-
 const getMyBlogsObjectAtom = atom <BlogsObject> ({
-    key: "getMyBlogsBbjectAtom123",
+    key: "getMyBlogsObjectAtom123",
     default: selector({
         key: "getMyBlogsSelectorAtom123",
         get: async () => {
@@ -164,17 +160,6 @@ const getMyBlogsObjectAtom = atom <BlogsObject> ({
         }
     })
 })
-
-// const getMyImagesObjectAtom = atom <ImagesObject> ({
-//     key: "getMyImagesObjectAtom123",
-//     default: {
-//         "abc": {
-//             id: "",
-//             image: ""
-//         }
-//     }
-// })
-
 
 const getMyImagesObjectAtom = atom <ImagesObject> ({
     key: "getMyImagesObjectAtom123",
@@ -216,7 +201,6 @@ const myBlogAtomFamily = atomFamily<BlogsObject, number>({
     default: {}
 })
 
-
 const myImageAtomFamily = atomFamily<ImagesObject, number>({
     key: "myImageAtomFamily123",
     default: {}
@@ -229,6 +213,102 @@ const isMyFirstBlogsBundleSet = atom<boolean>({
 
 
 
+
+
+const searchedUserId = atom<string | null>({
+    key: "searchedUserId123",
+    default: null
+})
+const searchedUserBlogsObjectAtom = atom <BlogsObject> ({
+    key: "searchedUserObjectAtom123",
+    default: selector({
+        key: "searchedUserSelectorAtom123",
+        get: async ({get}) => {
+            const userId = get(searchedUserId)
+            console.log("searchedUserBlogsObjectAtom")
+            try {
+                if (userId){
+                    const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/myFirstBulk?userId=${userId}`,{
+                        headers: {
+                            Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                        }, "responseType": "json"
+                    })
+                    const blogs = response.data
+                    if (blogs) {
+                        return blogs
+                    } else {
+                        return {}
+                    }
+                } else {
+                    return {}
+                }
+            } catch {
+                return {}
+            }
+        }
+    })
+})
+
+const searchedUserImagesObjectAtom = atom <ImagesObject> ({
+    key: "searchedUserImagesObjectAtom123",
+    default: selector({
+        key: "searchedUserImagesObjectAtomSelector123",
+        get: async ({get}: {get:GetRecoilValue})=> {
+            try {
+                const blogs = get(searchedUserBlogsObjectAtom)
+                const userId = get(searchedUserId)
+                if (userId){
+                    const blogIds = Object.keys(blogs).filter((id) => {
+                        if (blogs[id].imageExist){
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
+                    const response = await axios.post(`http://127.0.0.1:8787/api/v1/blog/images?userId=${userId}`,{
+                        blogIds,
+                    },{
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                        }
+                    })
+                    const images = response.data
+                    if (images){
+                        return images
+                    } else {
+                        return {}
+                    }
+                } else {
+                    return {};
+                }
+            } catch {
+                return {}
+            }
+        } 
+    })
+})
+
+const searchedUserAtomFamily = atomFamily<BlogsObject, number>({
+    key: "searchedUserAtomFamily123",
+    default: {}
+})
+
+const searchedUserImageAtomFamily = atomFamily<ImagesObject, number>({
+    key: "searchedUserImageAtomFamily123",
+    default: {}
+})
+
+const isSearchedUserFirstBlogsBundleSet = atom<boolean>({
+    key: "isSearchedUserFirstBlogsBundleSet123",
+    default: false
+})
+
+
+
+
+
+
 type Comment = {
     id: number,
     authorId: string;
@@ -238,8 +318,6 @@ type Comment = {
         name: string;
     }
 }
-
-
 
 const commentorImagesAtom = atom<ImagesObject>({
     key: "commentorImages",
@@ -256,11 +334,12 @@ const commentImageAtomFamily = atomFamily<ImagesObject, number>({
     default: {}
 })
 
-
 const numberOfCommentsFetched = atom<number>({
     key: "numberOfCommentsFetched",
     default: 0
 })
 
-export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentorImagesAtom, commentAtomFamily, commentImageAtomFamily, numberOfCommentsFetched, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, isFirstBlogsBundleSet, getAuthorImagesObjectAtom, authorImageAtomFamily, isMyFirstBlogsBundleSet}
+
+
+export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentorImagesAtom, commentAtomFamily, commentImageAtomFamily, numberOfCommentsFetched, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, isFirstBlogsBundleSet, getAuthorImagesObjectAtom, authorImageAtomFamily, isMyFirstBlogsBundleSet, searchedUserId, searchedUserBlogsObjectAtom, searchedUserImagesObjectAtom, searchedUserAtomFamily, searchedUserImageAtomFamily, isSearchedUserFirstBlogsBundleSet}
 

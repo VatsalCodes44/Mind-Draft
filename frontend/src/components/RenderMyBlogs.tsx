@@ -2,9 +2,8 @@ import { useRecoilValue } from "recoil";
 import { myBlogAtomFamily } from "../store/blogs/atom";
 import { memo } from "react";
 import MyBlogCard from "./MyBlogCard";
-import { BlogsLoaderChild } from "./BlogsLoader";
 
-const RenderMyBlogs = memo(({homeDraftsLibrary, atomNumber}: {homeDraftsLibrary: "home" | "drafts" | "library", atomNumber: number}) => {
+const RenderMyBlogs = memo(({homeDraftsLibrary, atomNumber}: {homeDraftsLibrary: "home" | "drafts", atomNumber: number}) => {
     const myBlogsObject = useRecoilValue(myBlogAtomFamily(atomNumber))
     return (
             <div className=" mx-auto w-full ">

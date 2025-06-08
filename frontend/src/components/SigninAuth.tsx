@@ -48,6 +48,7 @@ const SigninAuth = memo(() => {
             
             <div className="">
                 <Button type={"singin"} onClick={async () => {
+                    sessionStorage.clear()
                     const response: {
                     data: {
                         jwt: string,

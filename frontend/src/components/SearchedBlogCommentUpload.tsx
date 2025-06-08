@@ -1,7 +1,7 @@
-import axios from "axios";
-import { memo, useEffect, useRef, useState } from "react";
+import axios from "axios"
+import { memo, useEffect, useRef, useState } from "react"
 import getDateTime from "./getDateTime";
-import { SetterOrUpdater, useSetRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import { commentAtomFamily } from "../store/blogs/atom";
 
 interface Blog {
@@ -20,12 +20,9 @@ interface Blog {
     }
     authorId: string;
 }
-interface BlogsObject {
-  [id: string]: Blog;
-}
-const MyCommentUpload = memo( ({blogId, setBlogs}: {blogId: string, setBlogs: SetterOrUpdater<BlogsObject>}) => {
-    const setComments = useSetRecoilState(commentAtomFamily(1))
+const SearchedBlogCommentUpload = memo(({blog, setBlog}: {blog: Blog | null, setBlog: React.Dispatch<React.SetStateAction<Blog | null>>}) => {
     const [comment,setComment] = useState("")
+    const setComments = useSetRecoilState(commentAtomFamily(1))
     const [minHeight, setMinHeight] = useState("1rem")
     const [clicked, setClicked] = useState(false)
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -70,7 +67,7 @@ const MyCommentUpload = memo( ({blogId, setBlogs}: {blogId: string, setBlogs: Se
                         }else{
                             setClicked(true)
                             const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/addComment",{
-                                blogId,
+                                blogId: blog?.id,
                                 authorId: window.sessionStorage.getItem("userId"),
                                 comment,
                                 date: getDateTime()
@@ -82,7 +79,8 @@ const MyCommentUpload = memo( ({blogId, setBlogs}: {blogId: string, setBlogs: Se
                             if (response.status.toString() == "200") {
                                 setComments(previous => {
                                     return [
-                                        {   id: Math.random(),
+                                        {   
+                                            id: Math.random(),
                                             authorId: window.sessionStorage.getItem("userId")?.toString() || "",
                                             date: getDateTime(),
                                             comment,
@@ -96,12 +94,11 @@ const MyCommentUpload = memo( ({blogId, setBlogs}: {blogId: string, setBlogs: Se
                                     textareaRef.current.value = ""
                                     textareaRef.current.style.height= "20px"
                                 }
-                                setBlogs( previous => {
-                                    return {
-                                        ...previous, [blogId]:{
-                                            ...previous[blogId],
-                                            numberOfComments: previous[blogId].numberOfComments + 1
-                                        }
+                                setBlog(previous => {
+                                    if (previous){
+                                        return {...previous, numberOfComments: previous.numberOfComments + 1}
+                                    } else {
+                                        return null
                                     }
                                 })
                                 setClicked(false)
@@ -118,4 +115,4 @@ const MyCommentUpload = memo( ({blogId, setBlogs}: {blogId: string, setBlogs: Se
     )
 })
 
-export default MyCommentUpload;
+export default SearchedBlogCommentUpload;

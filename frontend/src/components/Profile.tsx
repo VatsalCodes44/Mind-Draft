@@ -2,14 +2,12 @@ import { memo, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
-const Profile = memo(({color}: {color:string}) => {
+const Profile = memo(({color, edit, profilePic, username}: {color:string, edit: boolean, profilePic?: string | null, username?: string | null}) => {
     const navigate = useNavigate()
     const [dropDown, setDropDown] = useState(false)
     const dropDownElement = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLDivElement>(null)
     const lastScroll = useRef<number> (0);
-    const profilePic = sessionStorage.getItem("profilePic")
-    const username = sessionStorage.getItem("username")
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -23,11 +21,14 @@ const Profile = memo(({color}: {color:string}) => {
             }
             lastScroll.current = window.scrollY;
         }
-
-        document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('scroll', handleScroll);
+        if (edit){
+            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('scroll', handleScroll);
+        }
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            if (edit){
+                document.removeEventListener('mousedown', handleClickOutside);
+            }
         };
     }, []);
 
@@ -36,13 +37,13 @@ const Profile = memo(({color}: {color:string}) => {
 
             <div className="flex gap-4">
                 <div className="w-15 h-15 sm:w-20 sm:h-20 rounded-full " style={{background: color}} >
-                    {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={ username ? username.trim()[0].toUpperCase() : ""} color={color}/>}
+                    {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={ username ? username.trim()[0].toUpperCase() : "A"} color={color}/>}
                 </div>
 
                 <div className="flex items-center">
                     <div>
                         <div className="w-full text-lg sm:text-2xl flex justify-center font-mono items-center font-semibold text-slate-900 lg:text-4xl lg:font-semibold">
-                            {sessionStorage.getItem("username")}
+                            {username}
                         </div>
                         <div className="text-gray-700 lg:hidden text-sm sm:text-md">
                             {2} followers
@@ -51,7 +52,7 @@ const Profile = memo(({color}: {color:string}) => {
                 </div>
             </div>
 
-            <div ref={buttonRef} className="lg:hidden" onClick={() => {
+            <div ref={buttonRef} className={`${edit ? "" : "hidden"} lg:hidden`} onClick={() => {
                             setDropDown(p => !p);
                 }}>
                 <div className="flex justify-center items-center hover:cursor-pointer ">
@@ -61,7 +62,7 @@ const Profile = memo(({color}: {color:string}) => {
                 </div>
             </div>
             <div ref={dropDownElement}
-            className={`
+            className={` ${edit ? "" : "hidden"}
                 hover:cursor-pointer
                 absolute right-2 z-10 mt-4 w-60 rounded-xs bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden 
                 transform transition-all duration-300 ease-out text-gray-700
@@ -86,32 +87,12 @@ const Profile = memo(({color}: {color:string}) => {
                         Edit Your Profile
                     </span>
                 </div>
-
-                {/* <div className="flex justify-start pl-5 py-3 gap-4 items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    className="w-5 h-5 rounded"
-                    aria-label="Stories">
-                    <path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                    </svg>
-                    <span>
-                        Change profile photo
-                    </span>
-                </div> */}
-
             </div>
     </div>
     )
 })
 
-const Image = memo(({profilePic}: {profilePic: File | string }) => {
-    if (profilePic instanceof(File)){
-        profilePic = URL.createObjectURL(profilePic);
-    }
+const Image = memo(({profilePic}: {profilePic: string}) => {
     return (
         <img src={profilePic} className="w-full h-full rounded-full" />
     )

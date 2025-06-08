@@ -29,6 +29,28 @@ export async function createUser ( prisma: any, body: {email: string, password: 
     };
 }
 
+export async function getUser( prisma: PrismaClient, userId: string ) {
+    try {
+        const res = await prisma.user.findUnique({
+            where: {
+                id: userId
+            },
+            select: {
+                name: true,
+                aboutMe: true,
+                profilePicExist: true
+            }
+        });
+        if (res) {
+            return res;
+        } else {
+            return null;
+        };
+    } catch (err) {
+        return null;
+    };
+}
+
 interface editUserData {
     name: string;
     aboutMe: string;
@@ -172,9 +194,14 @@ export async function getBlog(prisma: any, id:string){
             }, select : {
                 id: true,
                 title: true,
+                summary: true,
                 content: true,
+                editorState: true,
                 authorId: true,
                 imageExist: true,
+                date: true,
+                likes: true,
+                numberOfComments: true,
                 author: {
                     select: {
                         name: true
@@ -503,6 +530,34 @@ export async function editBlog(prisma: PrismaClient, authorId: string, blogId: s
                 authorId,
             },
             data,
+        })
+        if (res) {
+            return res;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        return null;
+    }
+}
+
+export async function suggestions(prisma: PrismaClient, query: string) {
+    try {
+        const res = await prisma.post.findMany({
+            where: {
+                OR: [
+                    {
+                        title: {
+                            contains: query,
+                            mode: "insensitive"
+                        }
+                    }
+                ]
+            }, take: 5,
+            select: {
+                id: true,
+                title: true
+            }
         })
         if (res) {
             return res;

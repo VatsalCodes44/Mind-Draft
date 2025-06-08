@@ -4,7 +4,7 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import MyPagination from "./MyPagination";
 
 
-const MyBlogsComponent = memo(({homeDraftsLibrary}: {homeDraftsLibrary: "home" | "drafts" | "library"}) => {
+const MyBlogsComponent = memo(({homeDraftsLibrary}: {homeDraftsLibrary: "home" | "drafts"}) => {
     const [requestNumber, setRequestNumber] = useState<number>(1)
     const myFirstBlogs = useRecoilValue(getMyBlogsObjectAtom)
     const myFirstImages = useRecoilValue(getMyImagesObjectAtom)

@@ -1,24 +1,26 @@
-import { memo, Suspense, useRef, useState } from "react";
-import randomColor from "../components/randomColor";
+import { memo, Suspense, useState } from "react";
 import Profile from "../components/Profile";
 import Appbar from "../components/Appbar";
 import BlogsLoader from "../components/BlogsLoader";
 import UserProfile from "../components/UserProfile";
 import { useNavigate } from "react-router-dom";
 import MyBlogsComponent from "../components/MyBlogsComponent";
+import { useRecoilValue } from "recoil";
+import { userProfileColor } from "../store/userInfo/atom";
+
 const Me = memo(() => {
-    const color = useRef<string>(randomColor());
+    const color = useRecoilValue(userProfileColor)
     const navigate = useNavigate()
-    const [homeDraftsLibrary, setHomeDraftsLibrary] = useState<"home" | "drafts" | "library">("home")
+    const [homeDraftsLibrary, setHomeDraftsLibrary] = useState<"home" | "drafts">("home")
 
     return (
-        <div className="w-full h-screen">
+        <div className="w-full min-h-180">
             <Appbar searchBar={true} edit={false} write={true} publish={false}  notifications={true}/>
             <div className="w-full px-5 lg:grid lg:grid-cols-12 lg:gap-8 pt-25 lg:mr-7.5">
                 <div className="hidden lg:block lg:col-span-1"></div>
                 <div className=" lg:col-span-6">
-                    <div className="lg:flex-none sm:mx-16 md:mx-16 lg:mx-0">
-                        <Profile color={color.current.toString()} />
+                    <div className="lg:flex-none sm:mx-16 md:mx-16 lg:mx-0 ">
+                        <Profile color={color} edit={true} profilePic={sessionStorage.getItem("profilePic")} username={sessionStorage.getItem("username")} />
                     </div>
                     <div className="min-w-auto sm:mx-16 md:mx-16 lg:mx-0">
                         <div className="flex gap-6 border-b-1 mt-10 border-b-gray-200 pb-3 text-gray-600 ">
@@ -32,11 +34,6 @@ const Me = memo(() => {
                             }}  className={`${homeDraftsLibrary == "drafts" ? "text-black underline underline-offset-17" : ""} hover:cursor-pointer`}>
                                 Drafts
                             </div>
-                            <div onClick={() => {
-                                setHomeDraftsLibrary("library")
-                            }}  className={`${homeDraftsLibrary == "library" ? "text-black underline underline-offset-17" : ""} hover:cursor-pointer`}>
-                                Library
-                            </div>
                         </div>
                     </div>
                     <div className="">
@@ -47,12 +44,11 @@ const Me = memo(() => {
                     </div>
                 </div>
                 
-
                 <div className="hidden w-full text-black lg:block lg:col-span-4 ">
                     <div className="flex justify-between">
                         <div className=" w-1 h-100 mt-17 ml-7.5 border-l-1 border-gray-300 right-130" />
                         <div className="w-full ml-7.5">
-                            <UserProfile />
+                            <UserProfile profilePic={sessionStorage.getItem("profilePic")} username={sessionStorage.getItem("username")} aboutMe={sessionStorage.getItem("aboutMe")} color={color} />
                             <div onClick={() => {
                                 navigate("/updateProfile")
                             }}
@@ -81,12 +77,3 @@ const Me = memo(() => {
 })
 
 export default Me;
-// <div className="flex justify-center">
-//     <div className={` w-30 h-30 rounded-full flex justify-center items-center text-5xl text-white`} style={{background: color.current.toString()}} >
-//         {/* {oneBlog.author.name[0].toUpperCase()} */}
-//         V
-//     </div>
-// </div>
-// <div className="text-gray-700 flex justify-center">
-//     2 followers
-// </div>

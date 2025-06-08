@@ -1,17 +1,11 @@
-import { memo, useRef } from "react";
-import randomColor from "./randomColor";
+import { memo } from "react";
 
 
-const UserProfile = memo(() => {
-    const color = useRef<string>(randomColor())
-    const profilePic = sessionStorage.getItem("profilePic")
-    const username = sessionStorage.getItem("username")
-    const aboutMe = sessionStorage.getItem("aboutMe")
-      
+const UserProfile = memo(({profilePic, username, aboutMe, color}: {profilePic: string | null, username: string | null, aboutMe: string | null, color: string}) => {      
     return (
         <div className="text-block">
             <div className="flex justify-center">
-                {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={username ? username.trim()[0].toUpperCase() : ""} color={color.current} />}
+                {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={username ? username.trim()[0].toUpperCase() : ""} color={color} />}
             </div>
             <div className="flex gap-2 mt-4 text-lg font-semibold font-mono">
                 {username}

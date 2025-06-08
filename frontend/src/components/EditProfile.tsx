@@ -1,9 +1,9 @@
 import { memo, useCallback, useState } from "react";
 import EditAbout from "../components/EditAbout";
-import { useRecoilState, useResetRecoilState } from "recoil";
-import randomColor from "./randomColor";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { userProfileColor } from "../store/userInfo/atom";
 
 
 const EditProfile = memo(() => {
@@ -51,7 +51,7 @@ const EditProfile = memo(() => {
     return (
         <div className="text-block ">
             <div className="flex justify-center">
-                {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={imageName ? imageName.trim()[0].toUpperCase() : ""}/>}
+                {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={username ? username.trim()[0].toUpperCase() : ""}/>}
             </div>
             <div className="flex justify-center items-center space-x-2 mt-4">
                 <label htmlFor="uploadImage" className="w-fit text-sm bg-green-600 hover:bg-green-700 hover:cursor-pointer p-1 rounded-sm text-white flex text-center">Change Profile Photo </label>
@@ -67,6 +67,7 @@ const EditProfile = memo(() => {
                 <svg
                 onClick={() => {
                     setImageName(null)
+                    setProfilePic(sessionStorage.getItem("profilePic"))
                 }}
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 16 16"
@@ -120,7 +121,7 @@ const Image = memo(({profilePic}: {profilePic: File | string }) => {
 })
 
 const ImageNotExist = memo(({username}:{username: string}) => {
-    const color = randomColor()
+    const color = useRecoilValue(userProfileColor)
     return(
         <div className="h-40 w-40 rounded-full text-white text-4xl flex justify-center items-center" style={{background: color}}>
                 {username}

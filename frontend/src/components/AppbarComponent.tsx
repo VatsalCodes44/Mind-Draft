@@ -1,9 +1,9 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import SearchBar from "./SearchBar";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { htmlContent, preview } from "../store/blogUploadEdit/atom";
 import { memo, useEffect, useRef, useState } from "react";
-import randomColor from "./randomColor";
+import axios from "axios";
+import { userProfileColor } from "../store/userInfo/atom";
 
 
 const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: {searchBar: boolean, write: boolean, publish: boolean, edit:boolean, notifications: boolean}) => {
@@ -16,7 +16,59 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
     const lastScroll = useRef<number> (0);
     const [param] = useSearchParams()
     const myBlogId = param.get("myBlogId")
-    const color = useRef<string>(randomColor())
+    const color = useRecoilValue(userProfileColor)
+    const [input, setInput] = useState("")
+    const [suggestions, setSuggestions] = useState<suggestionType[]>([])
+    const [loading, setLoading] = useState(false)
+    const [showSearchBar, setShowSearchBar] = useState<boolean>(false)
+    useEffect(() => {
+        const results = localStorage.getItem("cachedSearchResults") || "[]";
+        const storedArray: Results[] = JSON.parse(results)
+        if (storedArray.length >= 5){
+            setSuggestions(storedArray.slice(0,5))
+        } else {
+            setSuggestions(storedArray.slice(0, storedArray.length))
+        }
+    },[])
+    const fetchSuggestions = async (query: string) => {
+        try{
+            setLoading(true)
+            const results = localStorage.getItem("cachedSearchResults") || "[]";
+            const storedArray: Results[] = JSON.parse(results)
+            const cachedResults = storedArray.filter(x => {
+                if (x.title.includes(input)){
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            if (cachedResults.length > 0) {
+                setSuggestions(cachedResults)
+            } else {
+                const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/getSuggestions?query=${query}`,{
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }
+                })
+                if (response) {
+                    const suggestionsArray: suggestionType[] = response.data
+                    setSuggestions(suggestionsArray);
+                } else {
+                    setSuggestions([])
+                }
+            }          
+        } catch {
+            return []
+        } finally {
+            setLoading(false)
+        }
+    }
+    useEffect(() => {
+        if (input.length >= 1){
+            fetchSuggestions(input)
+        }
+    }, [input])
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropDown==true){
@@ -50,7 +102,38 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
                     </div>
                     <div className={`${searchBar ? "" : "hidden"}`}>
                         <div className=" mx-3 hidden sm:block">
-                            <SearchBar />
+                            <div className="relative ">
+                                <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                    <svg className="w-4 h-4 text-black " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                    </svg>
+                                </div> 
+                                <input type="text" value={input}
+                                    placeholder="Search blogs..."
+                                    onChange={(e) => setInput(e.target.value)} 
+                                    className="bg-gray-100 custom-caret py-2 px-10 rounded-full focus:outline-0" />
+                            </div>
+                        </div>
+                        <div className="hidden sm:block">
+                            <div className={`${input == "" ? "hidden" : "block"} `}>
+                                {loading ? (
+                                    <div className="mt-2 absolute rounded-lg shadow-lg border border-gray-200 w-3xs sm:w-sm md:w-md">
+
+                                        <div
+                                        className="h-8 w-full p-1 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse shadow"
+                                        ></div>
+                                    
+                                    </div>
+                                ) : (
+                                    suggestions.length > 0 && (
+                                    <div className="mt-2 absolute bg-white rounded-lg shadow-lg border border-gray-200 max-w-3xs sm:max-w-sm md:max-w-md">
+                                        {suggestions.map((s,i) => (
+                                        <Suggestion key={i} suggestion={s} highlight={input} />
+                                        ))}
+                                    </div>
+                                    )
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -68,7 +151,9 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
                         </div> 
                     </div>
 
-                    <div className={` ${searchBar ? "" : "hidden"} `}>
+                    <div className={` ${searchBar ? "" : "hidden"} `} onClick={() => {
+                        setShowSearchBar(p => !p)
+                    }}>
                         <div className=" sm:hidden mt-2 hover:cursor-pointer">
                             <div className="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={.6} stroke="currentColor" className="size-6">
@@ -123,7 +208,7 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
                     <div ref={buttonRef} onClick={() => {
                             setDropDown(p => !p);
                     }} className="h-9 w-9 text-xs rounded-full mr-3 sm:mr-6.5 pb-0.5 hover:cursor-pointer">
-                            {sessionStorage.getItem("profilePicExist") ? <AuthorImage profilePic={sessionStorage.getItem("profilePic") || ""}/> : <ImageNotExist username={(sessionStorage.getItem("username") || "a").toUpperCase()} color={color.current}/>}
+                            {sessionStorage.getItem("profilePicExist") ? <AuthorImage profilePic={sessionStorage.getItem("profilePic") || ""}/> : <ImageNotExist username={(sessionStorage.getItem("username") || "a").toUpperCase()[0]} color={color}/>}
                     </div>
                     <div ref={dropDownElement}
                     className={`
@@ -218,6 +303,46 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
                     </div>
                 </div>
             </div>
+            {showSearchBar && 
+            <div className="absolute w-full sm:hidden pt-2">
+                <div className={`w-3xs mx-auto`}>
+                    <div className="relative ">
+                        <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                            <svg className="w-4 h-4 text-black " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                            </svg>
+                        </div> 
+                        <input type="text" value={input}
+                            placeholder="Search blogs..."
+                            onChange={(e) => setInput(e.target.value)} 
+                            className="bg-gray-100  custom-caret py-1 px-10 rounded-full focus:outline-0" 
+                            onKeyDown={(e) => {
+                                if (e.key == "Backspace" && input==""){
+                                    setShowSearchBar(false)
+                                }
+                            } }
+                            />
+                    </div>
+                    {loading ? (
+                        <div className="mt-2  rounded-lg shadow-lg border border-gray-200 ">
+
+                            <div
+                            className="h-8 p-1 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse shadow"
+                            ></div>
+                        
+                        </div>
+                    ) : (
+                        suggestions.length > 0 && (
+                        <div className="mt-2 bg-white rounded-lg shadow-lg border border-gray-200 ">
+                            {suggestions.map((s,i) => (
+                            <Suggestion key={i} suggestion={s} highlight={input} />
+                            ))}
+                        </div>
+                        )
+                    )}
+                </div>
+            </div>
+            }
         </div>
     )
 }
@@ -242,6 +367,49 @@ const ImageNotExist = memo(({username, color}:{username: string, color: string})
         </div>
     )
 })
-{/* <div className="h-6 w-6 text-xs mr-2 rounded-full">
-        {authorImages[blog.authorId] ? <Image profilePic={authorImages[blog.authorId].image}/> : <ImageNotExist username={blog.author.name.trim()[0].toUpperCase()} color={color.current}/>}
-</div> */}
+
+
+interface suggestionType {
+    id: string,
+    title: string
+}
+interface Results {
+    id: string,
+    title: string,
+}
+
+
+const Suggestion = ({suggestion, highlight}: {suggestion: suggestionType, highlight: string}) => {
+    const navigate = useNavigate()
+    const getHighlitedText = (text: string, highlight: string) => {
+        const input = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return input.split(new RegExp(`(${highlight})`, 'gi'))
+    }
+    return  (
+        <div className="truncate p-1 h-8 hover:bg-gray-50 hover:cursor-pointer" onClick={() => {
+            navigate(`/searchedBlog?blogId=${suggestion.id}`)
+            const results = localStorage.getItem("cachedSearchResults") || "[]";
+            const storedArray: Results[] = JSON.parse(results)
+            const alreadyExists = storedArray.some(item => item.id === suggestion.id);
+            if (!alreadyExists){
+                storedArray.unshift({
+                    id: suggestion.id,
+                    title: suggestion.title
+                })
+                localStorage.setItem("cachedSearchResults",JSON.stringify(storedArray))
+            }
+        }} >
+            {
+                getHighlitedText(suggestion.title, highlight).map((x,i) => {
+                    if (x.toLowerCase() === highlight.toLowerCase()) {
+                        return <span key={i} className="font-semibold text-indigo-700">{x}</span>
+                    } else {
+                        return (
+                            <span key={i} >{x}</span>
+                        )
+                    }
+                })
+            }
+        </div>
+    )
+}

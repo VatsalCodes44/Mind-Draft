@@ -8,6 +8,7 @@ import Clap from "./Clap";
 import axios from "axios";
 import CommentUpload from "./CommentUpload";
 import CommentsPagination from "./CommentsPagination";
+import { useNavigate } from "react-router-dom";
 type Comment = {
     id: number,
     authorId: string;
@@ -20,6 +21,7 @@ type Comment = {
 const OneBlog = memo(({ blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
     const color = useRef<string>(randomColor())
     const ref1 = useRef<HTMLDivElement>(null)
+    const navigate = useNavigate()
     const blogs = useRecoilValue(blogAtomFamily(atomNumber))
     const authorImages = useRecoilValue(authorImageAtomFamily(atomNumber))
     const [commentRequestNumber, setCommentRequestNumber] = useState<number>(1)
@@ -82,9 +84,10 @@ const OneBlog = memo(({ blogId, atomNumber}: {blogId: string, atomNumber: number
                     </div>
                     <div className="mt-3 text-md ">
                         <div className="flex ">
-                            <div className="font-mono text-slate-900 hover:underline hover:decoration-gray-900 hover:cursor-pointer">{blogs[blogId].author.name}</div>
-                            <div className="ml-2 text-gray-500 font-bold">·</div>
-                            <div className="ml-2 font-mono text-slate-900 underline hover:decoration-gray-900 hover:cursor-pointer">Follow</div>
+                            <div onClick={() => {
+                                navigate(`/searchUser?userId=${blogs[blogId].authorId}`)
+                                window.scrollTo(0,0)
+                            }} className="font-mono text-slate-900 hover:underline hover:decoration-gray-900 hover:cursor-pointer">{blogs[blogId].author.name}</div>
                         </div>
                         <div className="text-sm text-slate-500 font-medium flex">
                             <div>
@@ -119,7 +122,7 @@ const OneBlog = memo(({ blogId, atomNumber}: {blogId: string, atomNumber: number
                 </div>
                 <div className=" flex"> 
                     <div className="h-9 w-9 text-xs mr-2 rounded-full">
-                            {sessionStorage.getItem("profilePicExist") ? <AuthorImage profilePic={sessionStorage.getItem("profilePic") || ""} /> : <ImageNotExist username={(sessionStorage.getItem("username") || "a").toUpperCase()} color={color.current}/>}
+                            {sessionStorage.getItem("profilePicExist") ? <AuthorImage profilePic={sessionStorage.getItem("profilePic") || ""} /> : <ImageNotExist username={(sessionStorage.getItem("username") || "a").toUpperCase()[0]} color={color.current}/>}
                     </div>
                     <div className=" text-md font-mono mt-2">
                         {sessionStorage.getItem("username")}

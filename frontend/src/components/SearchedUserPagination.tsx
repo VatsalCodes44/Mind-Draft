@@ -1,46 +1,46 @@
 import { memo, useEffect, useRef } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { myBlogAtomFamily, myImageAtomFamily } from "../store/blogs/atom";
+import { searchedUserAtomFamily, searchedUserImageAtomFamily } from "../store/blogs/atom";
 import axios from "axios";
-import RenderMyBlogs from "./RenderMyBlogs";
+import RenderSearchedUserBlogs from "./RenderSearchedUserBlogs";
 
 
-const MyPagination = memo(({ requestNumber, setRequestNumber, homeDraftsLibrary }: { requestNumber: number, setRequestNumber: React.Dispatch<React.SetStateAction<number>>, homeDraftsLibrary: "home" | "drafts"}) => {
-    const mycurrentBlogObject = useRecoilValue(myBlogAtomFamily(requestNumber));
-    const setMyNextBulkBlogObject = useSetRecoilState(myBlogAtomFamily(requestNumber + 1));
-    const setMyNextBulkImageObject = useSetRecoilState(myImageAtomFamily(requestNumber + 1))
+const SearchedUserPagination = memo(({ requestNumber, setRequestNumber, homeDraftsLibrary, userId }: { requestNumber: number, setRequestNumber: React.Dispatch<React.SetStateAction<number>>, homeDraftsLibrary: "home" | "drafts", userId: string}) => {
+    const userCurrentBlogObject = useRecoilValue(searchedUserAtomFamily(requestNumber));
+    const setUserNextBulkBlogObject = useSetRecoilState(searchedUserAtomFamily(requestNumber + 1));
+    const setUserNextBulkImageObject = useSetRecoilState(searchedUserImageAtomFamily(requestNumber + 1))
     const fetching = useRef(false)
 
     const onBottomReach = async () => {
         if (fetching.current) return;
         fetching.current = true;
         try {
-            const keys = Object.keys(mycurrentBlogObject);
+            const keys = Object.keys(userCurrentBlogObject);
             if(keys.length === 0) return;
 
             const cursor = keys[keys.length - 1]
-            const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/myBulk?cursor=${cursor}`, {
+            const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/myBulk?cursor=${cursor}&&userId=${userId}`, {
                 headers: {
                     Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 },
                 responseType: "json"
             })
-            const myBlogs = response.data;
+            const userBlogs = response.data;
 
-            const myBlogIds = Object.keys(myBlogs).filter(id => myBlogs[id]?.imageExist);
-            console.log(myBlogIds)
+            const userBlogIds = Object.keys(userBlogs).filter(id => userBlogs[id]?.imageExist);
+            console.log(userBlogIds)
             const response2 = await axios.post("http://127.0.0.1:8787/api/v1/blog/images", {
-                blogIds: myBlogIds,
+                blogIds: userBlogIds,
             }, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 }
             })
-            const myImages = response2.data;
+            const userImages = response2.data;
 
-            setMyNextBulkBlogObject(myBlogs)
-            setMyNextBulkImageObject(myImages)
+            setUserNextBulkBlogObject(userBlogs)
+            setUserNextBulkImageObject(userImages)
             setRequestNumber(p => p + 1)
         } catch (error) {
             console.log("Failed to fetch blogs:", error)
@@ -71,11 +71,11 @@ const MyPagination = memo(({ requestNumber, setRequestNumber, homeDraftsLibrary 
         <div className="">
             {
                 [...Array(requestNumber)].map((_,i) => {
-                    return <RenderMyBlogs key={i} atomNumber = {i+1} homeDraftsLibrary={homeDraftsLibrary} />
+                    return <RenderSearchedUserBlogs key={i} atomNumber = {i+1} homeDraftsLibrary={homeDraftsLibrary} />
                 })
             }
         </div>
     )
 })
 
-export default MyPagination;
+export default SearchedUserPagination;

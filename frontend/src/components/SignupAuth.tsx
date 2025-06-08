@@ -19,6 +19,7 @@ const SignupAuth = memo(() => {
         email: "",
         password: ""
     })
+    sessionStorage.clear()
     const navigate = useNavigate()
     return (
         <div className="shadow-2xl p-5 rounded-md shadow-gray-400 lg:shadow-none lg:p-0 lg:rounded-none"> 
@@ -54,6 +55,7 @@ const SignupAuth = memo(() => {
             
             <div>
                 <Button type={"signup"} onClick={ async () => {
+                    sessionStorage.clear()
                     const response: {
                         data: {
                             jwt: string,

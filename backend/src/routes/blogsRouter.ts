@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { jwtVerification } from '../middlewares/middlewares'
-import { addComment, bulkBlogs, client, createBlog, deleteBlog, editBlog, firstBulkBlogs, getBlog, getFirstComments, getNextComments, likesUpdate, myBulkBlogs, myFirstBulk } from '../db/prismaFunctions'
+import { addComment, bulkBlogs, client, createBlog, deleteBlog, editBlog, firstBulkBlogs, getBlog, getFirstComments, getNextComments, likesUpdate, myBulkBlogs, myFirstBulk, suggestions } from '../db/prismaFunctions'
 import { blogPostSchema } from "common-medium-project";
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client/extension';
@@ -301,10 +301,15 @@ blogsRouter.put("/edit", async (c) => {
 
 
 
-blogsRouter.get('/get/:blogId', async (c) => {
+blogsRouter.get('/getBlog', async (c) => {
   try{
   const prisma = await client(c.env.DATABASE_URL)
-  const blogId = c.req.param('blogId')
+  const blogId = c.req.query("blogId")
+  if (!blogId){
+    return c.json({
+      message: "blog do not exist"
+    },403)
+  }
   const response = await getBlog(prisma, blogId)
   if (response) {
     return c.json(
@@ -494,7 +499,13 @@ blogsRouter.get("/bulk", async (c) => {
 blogsRouter.get("/myFirstBulk", async (c) => {
   try {
     const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
-    const response: blog[] | null = await myFirstBulk(prisma, c.get("userId"))
+    const userId = c.req.query("userId")
+    let response: blog[] | null= null
+    if (userId){
+      response = await myFirstBulk(prisma, userId)
+    } else {
+      response = await myFirstBulk(prisma, c.get("userId"))
+    }
 
     if (response) {
       const blogsObject : blogsObject = {};
@@ -520,13 +531,19 @@ blogsRouter.get("/myBulk", async (c) => {
     const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
     const cursor = c.req.query("cursor")
     if (cursor){
-      const response: blog[] | null = await myBulkBlogs(prisma, c.get("userId"), cursor)
-        if (response) {
-        const blogsObject : blogsObject = {};
-        response.forEach((blog: blog) => {
-          blogsObject[blog.id] = blog
-        })
-        return c.json(blogsObject)
+      const userId = c.req.query("userId")
+      let response: blog[] | null= null
+      if (userId){
+        response = await myBulkBlogs(prisma, userId, cursor)
+      } else {
+        response = await myBulkBlogs(prisma, c.get("userId"), cursor)
+      }
+      if (response) {
+      const blogsObject : blogsObject = {};
+      response.forEach((blog: blog) => {
+        blogsObject[blog.id] = blog
+      })
+      return c.json(blogsObject)
       } else {
         return c.json({
           message: "some error occured"
@@ -643,6 +660,31 @@ blogsRouter.get("/getNextComments", async (c) => {
       }) 
     }
     const res = await getNextComments(prisma, blogId, cursorInteger)
+      if (res) {
+        return c.json(res)
+      } else {
+       return c.json({
+          message: "invalid parameters"
+        }) 
+      }
+  } catch (err) {
+    return c.json({
+      message: "invalid parameters"
+    }) 
+  }
+})
+
+
+blogsRouter.get("/getSuggestions", async (c) => {
+  try {
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const query = c.req.query("query")
+    if (!query) {
+      return c.json({
+        message: "invalid parametres"
+      })
+    }
+    const res = await suggestions(prisma, query)
       if (res) {
         return c.json(res)
       } else {

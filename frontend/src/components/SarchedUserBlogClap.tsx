@@ -1,17 +1,17 @@
 import { memo, useRef, useState } from "react";
-import { myBlogAtomFamily } from "../store/blogs/atom";
+import {  searchedUserAtomFamily } from "../store/blogs/atom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { useMyClapDebounce } from "../hooks";
 
 
-const MyClap = memo(({blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
+const SarchedUserBlogClap = memo(({blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
     const [clap, setClapped] = useState <boolean> (false)
-    const myBlogs = useRecoilValue(myBlogAtomFamily(atomNumber))
+    const userBlogs = useRecoilValue(searchedUserAtomFamily(atomNumber))
     const [firstRender, setFirstRender] = useState<boolean>(true)
     const likeCountFormatter = new Intl.NumberFormat('en-US')
-    const likes = useRef<number>(myBlogs[blogId].likes)
-    const [renderLikes, setRenderLikes] = useState<number>(myBlogs[blogId].likes)
-    const setMyBlogs = useSetRecoilState(myBlogAtomFamily(atomNumber))
+    const likes = useRef<number>(userBlogs[blogId].likes)
+    const [renderLikes, setRenderLikes] = useState<number>(userBlogs[blogId].likes)
+    const setMyBlogs = useSetRecoilState(searchedUserAtomFamily(atomNumber))
     useMyClapDebounce(blogId, likes.current, firstRender, setFirstRender, setMyBlogs)
     return (
         <div className="flex hover:cursor-pointer">
@@ -32,4 +32,4 @@ const MyClap = memo(({blogId, atomNumber}: {blogId: string, atomNumber: number})
     )
 })
 
-export default MyClap;
+export default SarchedUserBlogClap;

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react"
-import { useSetRecoilState } from "recoil";
+import { SetterOrUpdater, useSetRecoilState } from "recoil";
 import { blogAtomFamily, myBlogAtomFamily } from "../store/blogs/atom";
 
 type blogs = {
@@ -121,8 +121,27 @@ export function useClapDebounce(blogId:string, likes: number, firstRender: boole
 }
 
 
-export function useMyClapDebounce(blogId:string, likes: number, firstRender: boolean, setFirstRender: React.Dispatch<React.SetStateAction<boolean>>, atomNumber: number){
-    const setMyBlogs = useSetRecoilState(myBlogAtomFamily(atomNumber))
+interface Blog {
+    id: string;
+    title: string;
+    summary: string;
+    content: string;
+    editorState: string;
+    imageExist: boolean;
+    published: boolean;
+    date: string;
+    likes: number;
+    numberOfComments: number;
+    author: {
+      name: string
+    }
+    authorId: string;
+}
+interface BlogsObject {
+  [id: string]: Blog;
+}
+
+export function useMyClapDebounce(blogId:string, likes: number, firstRender: boolean, setFirstRender: React.Dispatch<React.SetStateAction<boolean>>, setBlogs:  SetterOrUpdater<BlogsObject>){
     useEffect(() => {
         if (firstRender){
             setFirstRender(false)
@@ -136,7 +155,7 @@ export function useMyClapDebounce(blogId:string, likes: number, firstRender: boo
                         Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                     }
                 }).then(() => {
-                    setMyBlogs(p => {
+                    setBlogs(p => {
                     return {
                         ...p, [blogId]: {
                             ...p[blogId],
@@ -145,7 +164,7 @@ export function useMyClapDebounce(blogId:string, likes: number, firstRender: boo
                     }
             })
                 })
-
+                
             }, 1000)
 
             return () => {
@@ -153,4 +172,53 @@ export function useMyClapDebounce(blogId:string, likes: number, firstRender: boo
             }
         }
     }, [likes])
+}
+
+interface Blog {
+    id: string;
+    title: string;
+    summary: string;
+    content: string;
+    editorState: string;
+    imageExist: boolean;
+    published: boolean;
+    date: string;
+    likes: number;
+    numberOfComments: number;
+    author: {
+      name: string
+    }
+    authorId: string;
+}
+export function useSearchedClapDebounce(blogId:string, likes: number, firstRender: boolean, setFirstRender: React.Dispatch<React.SetStateAction<boolean>>, setBlog: React.Dispatch<React.SetStateAction<Blog | null>>){
+    useEffect(() => {
+        if (firstRender){
+            setFirstRender(false)
+        } else{
+            const timeout = setTimeout(async() => {
+            axios.post("http://localhost:8787/api/v1/blog/likesUpdate",{
+                    blogId,
+                    likes
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }
+                }).then(() => {
+                    setBlog((previous) => {
+                        if(previous){
+                            return {...previous, likes}
+                        } else {
+                            return null
+                        }
+                    })
+                }).catch(() => {
+                })
+
+            }, 1000)
+
+            return () => {
+                clearTimeout(timeout)
+            }
+        }
+    }, [likes, setBlog])
 }
