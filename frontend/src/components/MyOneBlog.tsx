@@ -89,9 +89,7 @@ const MyOneBlog = memo(({ myBlogId, atomNumber }: {myBlogId: string, atomNumber:
                     </div>
                     <div className="text-md ">
                         <div className="flex ">
-                            <div className="font-mono text-slate-900 hover:underline hover:decoration-gray-900 hover:cursor-pointer">{myBlogs[myBlogId].author.name}</div>
-                            <div className="ml-2 text-gray-500 font-bold">·</div>
-                            <div className="ml-2 font-mono text-slate-900 underline hover:decoration-gray-900 hover:cursor-pointer">Follow</div>
+                            <div className="font-mono text-slate-900 ">{myBlogs[myBlogId].author.name}</div>
                         </div>
                         <div className="text-sm text-slate-500 font-medium flex">
                             <div>

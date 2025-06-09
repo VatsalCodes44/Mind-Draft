@@ -3,7 +3,7 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import {  htmlContent as content, preview, editorState as eState, editImage as eImage, editBlog as eBlog } from "../store/blogUploadEdit/atom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { getMyBlogsObjectAtom, getMyImagesObjectAtom } from "../store/blogs/atom";
+import { getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily } from "../store/blogs/atom";
 
 async function objectURLToFile(objectUrl: string, fileName: string): Promise<File> {
   const response = await fetch(objectUrl);
@@ -12,18 +12,19 @@ async function objectURLToFile(objectUrl: string, fileName: string): Promise<Fil
   return file;
 }
 
-const EditPublish = memo(({myBlogId}:{myBlogId: string}) => {
+const EditPublish = memo(({myBlogId, atomNumber}:{myBlogId: string, atomNumber: number}) => {
     const [editBlog, setEditBlog] = useRecoilState(eBlog)
     const [summary,setSummary] = useState(editBlog.summary)
     const htmlContent = useRecoilValue(content)
     const editorState = useRecoilValue(eState)
-    const [myBlogs,setMyBlogs] = useRecoilState(getMyBlogsObjectAtom) 
+    const [myBlogs,setMyBlogs] = useRecoilState(myBlogAtomFamily(atomNumber)) 
     const setPreview = useSetRecoilState(preview)
-    const [myBlogImages, setmyBlogImages] = useRecoilState(getMyImagesObjectAtom)
+    const [myBlogImages, setmyBlogImages] = useRecoilState(myImageAtomFamily(atomNumber))
     const editImage = useRecoilValue(eImage)
     const [ring, setRing ] = useState <boolean> (false)
     const [draftRing, setDraftRing] = useState <boolean>(false)
     const [clicked,setClicked] = useState <boolean>(false)
+    const [imageChanged, setImageChanged] = useState(false)
     const navigate = useNavigate()  
 
     const handleApi = useCallback(async (published: boolean) => {
@@ -32,18 +33,7 @@ const EditPublish = memo(({myBlogId}:{myBlogId: string}) => {
             if (myBlogs[myBlogId].imageExist && myBlogImages[myBlogId].image == editImage){
             } else {
                 formData.append("image", await objectURLToFile(editImage, myBlogId))
-                await setMyBlogs(p => ({
-                    ...p, [myBlogId]:{
-                        ...p[myBlogId],
-                        imageExist: true
-                    }
-                }))
-                // setmyBlogImages(p => ({
-                //     ...p, [myBlogId]:{
-                //         ...p[myBlogId],
-                //         image: editImage
-                //     }
-                // }))
+                setImageChanged(true)
             }
         } else {
         }
@@ -96,6 +86,14 @@ const EditPublish = memo(({myBlogId}:{myBlogId: string}) => {
                     }
                 }
             })
+            if(imageChanged && editImage) {
+                setmyBlogImages(p => ({
+                    ...p, [myBlogId]:{
+                        ...p[myBlogId],
+                        image: editImage
+                    }
+                }))
+            }
         }).catch(() => {
             setRing(false)
             setDraftRing(false)

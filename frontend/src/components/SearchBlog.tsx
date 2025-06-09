@@ -4,10 +4,11 @@ import BlogLoader from "./BlogLoader";
 import randomColor from "./randomColor";
 import date from "./date";
 import SearchedBlogCommentUpload from "./SearchedBlogCommentUpload";
-import { useSetRecoilState } from "recoil";
+import { SetterOrUpdater, useSetRecoilState } from "recoil";
 import { commentAtomFamily, commentImageAtomFamily, numberOfCommentsFetched } from "../store/blogs/atom";
 import CommentsPagination from "./CommentsPagination";
-import { useSearchedClapDebounce } from "../hooks";
+
+
 
 type Comment = {
     id: number,
@@ -34,8 +35,9 @@ interface Blog {
     }
     authorId: string;
 }
+
+
 function SearchBlog({blogId}: {blogId: string}) {
-    
     const [blog, setBlog] = useState<Blog | null>(null)
     const [image, setImage] = useState<string | null>(null)
     const ref1 = useRef<HTMLDivElement>(null)
@@ -50,6 +52,7 @@ function SearchBlog({blogId}: {blogId: string}) {
     useEffect(() => {
         const getComments = async () => {
             try{
+                setLoading(true)
                 const response = await axios.get("http://localhost:8787/api/v1/blog/getFirstComments", {
                     headers: {
                         blogId,
@@ -88,7 +91,7 @@ function SearchBlog({blogId}: {blogId: string}) {
         if (!isFirstCommentsBundleSet.current){
             getComments()
         }
-    }, [])
+    }, [blogId])
     async function fetchBlog(blogId: string) {
         try{
             const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/getBlog?blogId=${blogId}`,{
@@ -116,6 +119,11 @@ function SearchBlog({blogId}: {blogId: string}) {
                 }
                 const response3 = await axios.post("http://localhost:8787/api/v1/user/userImage",{
                     userId: fetchedBlog.authorId
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }
                 })
                 const userImage = response3.data
                 if (userImage){
@@ -123,15 +131,13 @@ function SearchBlog({blogId}: {blogId: string}) {
                 }
             }
         } catch{
-            console.log("111111111111111111111")
-                // navigate("/blogs")
         } finally {
             setLoading(false)
         }
     }
     useEffect(() => {
         fetchBlog(blogId)
-    }, [])
+    }, [blogId])
 
   return (
         <div >
@@ -229,7 +235,7 @@ const Clap = memo(({blog, setBlog}: {blog: Blog, setBlog: React.Dispatch<React.S
     const [firstRender, setFirstRender] = useState<boolean>(true)
     const likeCountFormatter = new Intl.NumberFormat('en-US')
     const [claps, setClaps] = useState<number>(blog.likes)
-    useSearchedClapDebounce(blog.id, claps, firstRender, setFirstRender, setBlog)
+    useSearchClapDebounce(blog.id, claps, firstRender, setFirstRender, setBlog)
     return (
         <div className="flex hover:cursor-pointer">
             <div >
@@ -247,3 +253,36 @@ const Clap = memo(({blog, setBlog}: {blog: Blog, setBlog: React.Dispatch<React.S
         </div>
     )
 })
+export function useSearchClapDebounce(blogId:string, likes: number, firstRender: boolean, setFirstRender: React.Dispatch<React.SetStateAction<boolean>>, setBlogs:  SetterOrUpdater<Blog | null>){
+    useEffect(() => {
+        if (firstRender){
+            setFirstRender(false)
+        } else{
+            const timeout = setTimeout(async() => {
+            axios.post("http://localhost:8787/api/v1/blog/likesUpdate",{
+                    blogId,
+                    likes
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                    }
+                }).then(() => {
+                    setBlogs(p => {
+                        if (p) {
+                            return {
+                                ...p, likes : likes+1
+                            }
+                        } else {
+                            return null;
+                        }
+            })
+                })
+                
+            }, 1000)
+
+            return () => {
+                clearTimeout(timeout)
+            }
+        }
+    }, [likes])
+}

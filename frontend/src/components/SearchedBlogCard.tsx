@@ -102,10 +102,7 @@ const SearchedBlogCard = memo(({userBlog, homeDraftsLibrary, atomNumber}: {userB
         )
 })
 
-const Image = memo(({profilePic}: {profilePic: File | string }) => {
-    if (profilePic instanceof(File)){
-        profilePic = URL.createObjectURL(profilePic);
-    }
+const Image = memo(({profilePic}: {profilePic: string }) => {
     return (
         <img src={profilePic} className="w-full h-full rounded-full" />
     )

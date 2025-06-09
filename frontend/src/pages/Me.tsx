@@ -20,7 +20,7 @@ const Me = memo(() => {
                 <div className="hidden lg:block lg:col-span-1"></div>
                 <div className=" lg:col-span-6">
                     <div className="lg:flex-none sm:mx-16 md:mx-16 lg:mx-0 ">
-                        <Profile color={color} edit={true} profilePic={sessionStorage.getItem("profilePic")} username={sessionStorage.getItem("username")} />
+                        <Profile color={color} edit={true} profilePic={sessionStorage.getItem("profilePic")} username={sessionStorage.getItem("username")} aboutMe={sessionStorage.getItem("aboutMe")} />
                     </div>
                     <div className="min-w-auto sm:mx-16 md:mx-16 lg:mx-0">
                         <div className="flex gap-6 border-b-1 mt-10 border-b-gray-200 pb-3 text-gray-600 ">

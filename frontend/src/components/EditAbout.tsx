@@ -31,7 +31,7 @@ const EditAbout = memo(({aboutMe, setAboutMe}: {aboutMe: string | undefined, set
             className="resize-none overflow-hidden w-full text-lg font-semibold placeholder:text-xl rounded-md placeholder:text-gray-300 focus:outline-none" />
             <div className="flex justify-end">
                 <button onClick={() => {
-                    setAboutMe(undefined)
+                    setAboutMe("")
                 }} className="text-white text-sm bg-gray-700 hover:cursor-pointer hover:bg-gray-950 rounded-full px-3 py-1"> Clear </button>
             </div>
         </div>

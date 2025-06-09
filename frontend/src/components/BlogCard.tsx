@@ -42,7 +42,10 @@ const BlogCard = memo(({blog, atomNumber}: {blog: Blog, atomNumber: number}) => 
                     <div className="h-6 w-6 text-xs mr-2 rounded-full">
                             {authorImages[blog.authorId] ? <Image profilePic={authorImages[blog.authorId].image}/> : <ImageNotExist username={blog.author.name.trim()[0].toUpperCase()} color={color.current}/>}
                     </div>
-                    <div className="font-mono font-thin hover:underline hover:underline-offset-2 pt-0.5">
+                    <div onClick={() => {
+                        navigate(`/searchUser?userId=${blog.authorId}`)
+                            window.scrollTo(0,0)
+                    }} className="font-mono font-thin hover:underline hover:underline-offset-2 pt-0.5">
                         {blog.author.name.length > 15 ? `${blog.author.name.slice(0,15)}.` : blog.author.name } 
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { decode, sign, verify } from 'hono/jwt'
-import { createUser, findUser, client, userLogin, editBlog, editUser, getUser } from '../db/prismaFunctions';
+import { createUser, findUser, client, userLogin, editBlog, editUser, getUser, AuthorSuggestions } from '../db/prismaFunctions';
 import { signupBodySchema, signinBodySchema } from "common-medium-project";
 import {string, z} from "zod"
 import { jwtVerification } from '../middlewares/middlewares';
@@ -186,7 +186,7 @@ userRouter.post("/userImage", async (c) => {
     }, 403)
   }
   const r2Object = await c.env.MY_BUCKET.get(userId);
-    if (!r2Object || !r2Object.body) return c.json({message: "profile not exist"}, 403)
+    if (!r2Object || !r2Object.body) return c.json({message: "profile not exist"}, 200)
       
     const arrayBuffer = await streamToArrayBuffer(r2Object.body);
     const base64 = arrayBufferToBase64(arrayBuffer);
@@ -329,6 +329,32 @@ userRouter.get('/getUser', async (c) => {
     return c.json({
       message: "user do not exist"
     },403)
+  }
+})
+
+
+
+userRouter.get("/getAuthorSuggestions", async (c) => {
+  try {
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const query = c.req.query("query")
+    if (!query) {
+      return c.json({
+        message: "invalid parametres"
+      })
+    }
+    const res = await AuthorSuggestions(prisma, query)
+      if (res) {
+        return c.json(res)
+      } else {
+       return c.json({
+          message: "invalid parameters"
+        }) 
+      }
+  } catch (err) {
+    return c.json({
+      message: "invalid parameters"
+    }) 
   }
 })
 

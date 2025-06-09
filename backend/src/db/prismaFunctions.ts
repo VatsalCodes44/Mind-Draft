@@ -508,12 +508,7 @@ export async function getNextComments(prisma: PrismaClient, blogId: string, last
     }
 }
 
-// title               String     
-//   summary             String    
-//   content             String
-//   editorState         String
-//   imageExist          Boolean
-//   published           Boolean
+
 interface editPost {
     title: string,
     summary: string,
@@ -545,18 +540,41 @@ export async function suggestions(prisma: PrismaClient, query: string) {
     try {
         const res = await prisma.post.findMany({
             where: {
-                OR: [
-                    {
-                        title: {
-                            contains: query,
-                            mode: "insensitive"
-                        }
-                    }
-                ]
-            }, take: 5,
+                title: {
+                    contains: query,
+                    mode: "insensitive"
+                }
+            }, take: 4,
             select: {
                 id: true,
                 title: true
+            }
+        })
+        if (res) {
+            return res;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        return null;
+    }
+}
+
+
+
+export async function AuthorSuggestions(prisma: PrismaClient, query: string) {
+    try {
+        const res = await prisma.user.findMany({
+            where: {
+                name: {
+                    startsWith: query,
+                    mode: "insensitive"
+                }
+            }, take: 4,
+            select: {
+                id: true,
+                name: true,
+                profilePicExist: true
             }
         })
         if (res) {

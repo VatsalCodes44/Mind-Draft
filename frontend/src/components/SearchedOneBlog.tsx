@@ -6,7 +6,8 @@ import { memo, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import MyCommentUpload from "./MyCommentUpload";
 import CommentsPagination from "./CommentsPagination";
-import SarchedUserBlogClap from "./SarchedUserBlogClap";
+import SarchedUserBlogClap from "./SearchedUserBlogClap";
+import { searchedUserProfilePic, searchedUserUsername } from "../store/userInfo/atom";
 
 type Comment = {
     id: number,
@@ -23,13 +24,12 @@ const SearchedUserOneBlog = memo(({ blogId, atomNumber }: {blogId: string, atomN
     const ref1 = useRef<HTMLDivElement>(null);
     const [userBlogs, setUserBlogs] = useRecoilState(searchedUserAtomFamily(atomNumber));
     const userBlogsImage = useRecoilValue(searchedUserImageAtomFamily(atomNumber))
-    const profilePic = sessionStorage.getItem("profilePic")
-    const username = sessionStorage.getItem("username")
+    const profilePic = useRecoilValue(searchedUserProfilePic)
+    const username = useRecoilValue(searchedUserUsername)
     const [commentRequestNumber, setCommentRequestNumber] = useState<number>(1)
     const setFirstComments = useSetRecoilState(commentAtomFamily(1))
     const setFirstCommentorsImages = useSetRecoilState(commentImageAtomFamily(1))
     const setCommentsFetched = useSetRecoilState(numberOfCommentsFetched)
-    // const [isFirstCommentsBundleSet, setIsFirstCommentsBundleSet] = useRecoilState(FirstCommentsBundleSet)
     const isFirstCommentsBundleSet = useRef<boolean>(false)
     useEffect(() => {
         const getComments = async () => {
@@ -89,9 +89,7 @@ const SearchedUserOneBlog = memo(({ blogId, atomNumber }: {blogId: string, atomN
                     </div>
                     <div className="text-md ">
                         <div className="flex ">
-                            <div className="font-mono text-slate-900 hover:underline hover:decoration-gray-900 hover:cursor-pointer">{userBlogs[blogId].author.name}</div>
-                            <div className="ml-2 text-gray-500 font-bold">·</div>
-                            <div className="ml-2 font-mono text-slate-900 underline hover:decoration-gray-900 hover:cursor-pointer">Follow</div>
+                            <div className="font-mono text-slate-900">{userBlogs[blogId].author.name}</div>
                         </div>
                         <div className="text-sm text-slate-500 font-medium flex">
                             <div>

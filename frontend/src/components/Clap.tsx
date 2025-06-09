@@ -1,16 +1,16 @@
 import { memo, useState } from "react";
 import { blogAtomFamily } from "../store/blogs/atom";
-import { useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { useClapDebounce } from "../hooks";
 
 
 const Clap = memo(({blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
     const [clap, setClapped] = useState <boolean> (false)
-    const blogs  = useRecoilValue(blogAtomFamily(atomNumber))
+    const [blogs, setBlogs]  = useRecoilState(blogAtomFamily(atomNumber))
     const [firstRender, setFirstRender] = useState<boolean>(true)
     const likeCountFormatter = new Intl.NumberFormat('en-US')
     const [claps, setClaps] = useState<number>(blogs[blogId].likes)
-    useClapDebounce(blogId, claps, firstRender, setFirstRender, atomNumber)
+    useClapDebounce(blogId, claps, firstRender, setFirstRender, setBlogs)
     return (
         <div className="flex hover:cursor-pointer">
             <div >

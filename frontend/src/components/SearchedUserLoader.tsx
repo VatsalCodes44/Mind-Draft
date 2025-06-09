@@ -26,7 +26,7 @@ function SearchedUserLoader() {
                 <div className="flex gap-6 border-b-1 mt-10 border-b-gray-200 pb-3 text-gray-600 ">
                 </div>
             </div>
-            <div className="">
+            <div className="sm:mx-16 md:mx-16 lg:mx-0">
                 <BlogsLoader />
             </div>
         </div>

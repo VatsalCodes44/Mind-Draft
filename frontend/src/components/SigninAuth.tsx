@@ -72,6 +72,11 @@ const SigninAuth = memo(() => {
                     if (sessionStorage.getItem("profilePicExist")){
                         const response2 = await axios.post("http://localhost:8787/api/v1/user/userImage",{
                             userId: sessionStorage.getItem("userId")
+                        }, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
+                            }
                         })
                         if (response2) {
                             window.sessionStorage.setItem("profilePic",response2.data.image)

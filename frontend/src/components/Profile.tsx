@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
-const Profile = memo(({color, edit, profilePic, username}: {color:string, edit: boolean, profilePic?: string | null, username?: string | null}) => {
+const Profile = memo(({color, edit, profilePic, username, aboutMe}: {color:string, edit: boolean, profilePic?: string | null, username?: string | null, aboutMe?: string | null}) => {
     const navigate = useNavigate()
     const [dropDown, setDropDown] = useState(false)
     const dropDownElement = useRef<HTMLDivElement>(null)
@@ -35,20 +35,20 @@ const Profile = memo(({color, edit, profilePic, username}: {color:string, edit: 
     return (
         <div className="flex justify-between">
 
-            <div className="flex gap-4">
-                <div className="w-15 h-15 sm:w-20 sm:h-20 rounded-full " style={{background: color}} >
-                    {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={ username ? username.trim()[0].toUpperCase() : "A"} color={color}/>}
-                </div>
+            <div>
+                <div className="flex gap-4">
+                    <div className="w-15 h-15 sm:w-20 sm:h-20 rounded-full " style={{background: color}} >
+                        {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={ username ? username.trim()[0].toUpperCase() : "A"} color={color}/>}
+                    </div>
 
-                <div className="flex items-center">
-                    <div>
+                    <div className="flex items-center truncate">
                         <div className="w-full text-lg sm:text-2xl flex justify-center font-mono items-center font-semibold text-slate-900 lg:text-4xl lg:font-semibold">
                             {username}
                         </div>
-                        <div className="text-gray-700 lg:hidden text-sm sm:text-md">
-                            {2} followers
-                        </div>
                     </div>
+                </div>
+                <div className="sm:hidden font-semibold font-mono mt-4">
+                    {aboutMe}
                 </div>
             </div>
 
@@ -105,6 +105,5 @@ const ImageNotExist = memo(({username, color}:{username: string, color: string})
         </div>
     )
 })
-
 
 export default Profile;

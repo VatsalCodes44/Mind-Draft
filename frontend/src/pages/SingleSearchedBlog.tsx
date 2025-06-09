@@ -2,7 +2,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Appbar from '../components/Appbar';
 import SearchBlog from '../components/SearchBlog';
 
-function SearchedBlog() {
+function SingleSearchedBlog() {
     const navigate = useNavigate()
     const [param] = useSearchParams()
     const blogId = param.get("blogId")
@@ -20,4 +20,4 @@ function SearchedBlog() {
     )
 }
 
-export default SearchedBlog;
+export default SingleSearchedBlog;

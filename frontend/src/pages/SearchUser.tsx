@@ -36,6 +36,7 @@ const SearchUser = memo(() => {
     const setIsSearchedUserFirstBlogsBundleSet = useSetRecoilState(isSearchedUserFirstBlogsBundleSet)
     const fetchUserDetails = async () => {
         try {
+            setLoading(true)
             const response = await axios.get(`http://127.0.0.1:8787/api/v1/user/getUser?userId=${userId}`,{
                 headers: {
                     'Content-Type': 'application/json',
@@ -45,7 +46,7 @@ const SearchUser = memo(() => {
             if (response){
                 const user: User = response.data
                 setUsername(user.name)
-                setAboutMe(user.name)
+                setAboutMe(user.aboutMe)
                 if (user.profilePicExist){
                     const response2 = await axios.post(`http://127.0.0.1:8787/api/v1/user/userImage`,{
                         userId
@@ -70,7 +71,10 @@ const SearchUser = memo(() => {
         setIsSearchedUserFirstBlogsBundleSet(false)
         setSearchedUserId(userId)
         fetchUserDetails()
-    }, [])
+
+        return () => {
+        }
+    }, [userId])
 
     
     return (

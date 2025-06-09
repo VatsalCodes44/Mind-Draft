@@ -1,6 +1,6 @@
 import axios from "axios";
 import { atom, atomFamily, GetRecoilValue, selector } from "recoil";
-
+console.log("atom families loaded")
 
 interface Blog {
     id: string;
@@ -330,7 +330,7 @@ const commentAtomFamily = atomFamily<Comment[], number>({
 })
 
 const commentImageAtomFamily = atomFamily<ImagesObject, number>({
-    key: "commentImageAtomFamily",
+    key: "commentImageAtomFamily234",
     default: {}
 })
 
@@ -339,7 +339,13 @@ const numberOfCommentsFetched = atom<number>({
     default: 0
 })
 
+const searchBlogLoading = atom<boolean>({
+    key: "searchBlogLoading123",
+    default: true
+})
 
-
-export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentorImagesAtom, commentAtomFamily, commentImageAtomFamily, numberOfCommentsFetched, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, isFirstBlogsBundleSet, getAuthorImagesObjectAtom, authorImageAtomFamily, isMyFirstBlogsBundleSet, searchedUserId, searchedUserBlogsObjectAtom, searchedUserImagesObjectAtom, searchedUserAtomFamily, searchedUserImageAtomFamily, isSearchedUserFirstBlogsBundleSet}
+export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentorImagesAtom, commentAtomFamily, commentImageAtomFamily, 
+    numberOfCommentsFetched, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, isFirstBlogsBundleSet, getAuthorImagesObjectAtom, 
+    authorImageAtomFamily, isMyFirstBlogsBundleSet, searchedUserId, searchedUserBlogsObjectAtom, searchedUserImagesObjectAtom, searchedUserAtomFamily, 
+    searchedUserImageAtomFamily, isSearchedUserFirstBlogsBundleSet, searchBlogLoading}
 

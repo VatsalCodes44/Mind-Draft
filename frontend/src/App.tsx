@@ -11,6 +11,7 @@ import Random from "./pages/Random"
 import SearchedBlog from "./pages/SingleSearchedBlog"
 import SearchUser from "./pages/SearchUser"
 import UserBlog from "./pages/UserBlog"
+import SingleSearchedBlog from "./pages/SingleSearchedBlog"
 
 const Upload = React.lazy( () => {
   return import("./pages/Upload")
@@ -42,7 +43,8 @@ function App() {
                 <Route path= "/updateProfile"  element = {<UpdateProfile/>} />
                 <Route path= "/searchUser"  element = {<SearchUser/>} />
                 <Route path= "/searchedBlog"  element = {<SearchedBlog/>} />
-                <Route path= "/random"  element = {<SearchUser/>} />
+                <Route path= "/SingleSearchedBlog"  element = {<SingleSearchedBlog/>} />
+                <Route path= "/random"  element = {<Random/>} />
               </Routes>
           </BrowserRouter>
         </RecoilRoot>

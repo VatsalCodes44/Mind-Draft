@@ -1,7 +1,7 @@
 import { memo, useRef, useState } from "react";
 import { myBlogAtomFamily } from "../store/blogs/atom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { useMyClapDebounce } from "../hooks";
+import { useClapDebounce } from "../hooks";
 
 
 const MyClap = memo(({blogId, atomNumber}: {blogId: string, atomNumber: number}) => {
@@ -12,7 +12,7 @@ const MyClap = memo(({blogId, atomNumber}: {blogId: string, atomNumber: number})
     const likes = useRef<number>(myBlogs[blogId].likes)
     const [renderLikes, setRenderLikes] = useState<number>(myBlogs[blogId].likes)
     const setMyBlogs = useSetRecoilState(myBlogAtomFamily(atomNumber))
-    useMyClapDebounce(blogId, likes.current, firstRender, setFirstRender, setMyBlogs)
+    useClapDebounce(blogId, likes.current, firstRender, setFirstRender, setMyBlogs)
     return (
         <div className="flex hover:cursor-pointer">
             <div >

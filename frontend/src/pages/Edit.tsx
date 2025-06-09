@@ -16,8 +16,14 @@ const Edit = memo(() => {
     const setHtmlContent = useSetRecoilState(htmlContent)
     const [param] = useSearchParams()
     const myBlogId = param.get("myBlogId")
+    const number = param.get("number")
     console.log(myBlogId)
-    if (!myBlogId){
+    if (!myBlogId || !number){
+        navigate("/me");
+        return;
+    }
+    const atomNumber = parseInt(number)
+    if (!atomNumber){
         navigate("/me");
         return;
     }
@@ -46,7 +52,7 @@ const Edit = memo(() => {
          <div>
             <div className={` ${preview  ===  "edit" ? "block" : "hidden"} `}>
                 <div className=" max-h-screen ">
-                    <EditBlog myBlogId={myBlogId} />
+                    <EditBlog myBlogId={myBlogId}/>
                 </div>
             </div>
 
@@ -80,7 +86,7 @@ const Edit = memo(() => {
 
 
             <div className={` ${preview === "publish" ? "block" : "hidden "} w-full px-5`}>
-               <EditPublish myBlogId={myBlogId} />
+               <EditPublish myBlogId={myBlogId} atomNumber={atomNumber}  />
                 
             </div>
              
