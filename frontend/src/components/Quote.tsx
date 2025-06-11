@@ -5,7 +5,7 @@ const Quote = memo(() => {
 
     return (
         <div className=" min-h-screen flex flex-col justify-center " style={{ backgroundColor: 'rgb(243, 245, 247)' }}>
-            <img className="h-screen" src = "public\mindDraft.jpg" alt = "..." />
+            <img className="h-screen" src = "/mindDraft.jpg" alt = "..." />
         </div>
     )
 })
