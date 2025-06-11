@@ -4,7 +4,7 @@ import { memo, useEffect } from "react";
 import EditBlog from "../components/EditBlog";
 import EditPreview from "../components/EditPreview";
 import EditPublish from "../components/EditPublish";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { getMyBlogsObjectAtom } from "../store/blogs/atom";
 
 const atomsToReset = [p, summary, htmlContent, title, editorState, editImage, editBlog]
@@ -17,14 +17,15 @@ const Edit = memo(() => {
     const [param] = useSearchParams()
     const myBlogId = param.get("myBlogId")
     const number = param.get("number")
+    if (!sessionStorage.getItem("token")){
+        return <Navigate to={"/signin"} />
+    }
     if (!myBlogId || !number){
-        navigate("/me");
-        return;
+        return <Navigate to={"/me"} />
     }
     const atomNumber = parseInt(number)
     if (!atomNumber){
-        navigate("/me");
-        return;
+        return <Navigate to={"/me"} />
     }
     const resetAllAtoms = useRecoilCallback(({ reset }) => () => {
             atomsToReset.forEach(atom => reset(atom));

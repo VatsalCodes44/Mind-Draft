@@ -2,10 +2,13 @@ import Appbar from "../components/Appbar";
 import { memo, Suspense } from "react";
 import BlogsLoader from "../components/BlogsLoader";
 import BlogsComponent from "../components/BlogsComponent";
+import { Navigate } from "react-router-dom";
 
 
 const Blogs = memo(() => {
-    // const blogs = useBlogs();
+    if (!sessionStorage.getItem("token")){
+        return <Navigate to={"/signin"} />
+    }
     return (
         <div className="">
             <div>

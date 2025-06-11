@@ -4,6 +4,7 @@ import { editorState, getImage, htmlContent, imageExist, preview as p, preview, 
 import Preview from "../components/Preview";
 import Publish from "../components/Publish";
 import { memo, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 const atomsToReset = [getImage, imageExist, title, htmlContent, preview, summary, editorState]
 
 const Upload = memo(() => {
@@ -17,6 +18,9 @@ const Upload = memo(() => {
             resetAllAtoms()
         }
     },[])
+    if (!sessionStorage.getItem("token")){
+        return <Navigate to={"/signin"} />
+    }
 
     return (
         <div>
