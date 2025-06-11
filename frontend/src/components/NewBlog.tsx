@@ -17,7 +17,7 @@ const NewBlog = memo(() => {
 
             <div className=" mb-20 ">
                 <div className="fixed top-0 bg-white w-full z-50 ">
-                        <AppbarComponent searchBar={false} write= {false} publish={true} notifications={false} edit={false} />
+                        <AppbarComponent searchBar={false} write= {false} publish={true} edit={false} />
                 </div>
             </div>
 
