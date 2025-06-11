@@ -5,7 +5,7 @@ import BlogsLoader from "../components/BlogsLoader";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { searchedUserAboutMe, searchedUserProfilePic, searchedUserUsername, userProfileColor } from "../store/userInfo/atom";
 import UserProfile from "../components/UserProfile";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import SearchedUserBlogsComponent from "../components/SearchedUserBlogsComponent";
 import SearchedUserLoader from "../components/SearchedUserLoader";
@@ -24,10 +24,12 @@ const SearchUser = memo(() => {
     const [param] = useSearchParams()
     const navigate = useNavigate()
     const userId = param.get("userId") || ""
-    // if (!userId){
-    //     navigate("/blogs")
-    //     return null;
-    // }
+    if (!sessionStorage.getItem("token")){
+        return <Navigate to={"/signin"} />
+    }
+    if (!userId){
+        return <Navigate to={"/signin"} />
+    }
     const setSearchedUserId = useSetRecoilState(searchedUserId)
     const [profilePic, setProfilePic] = useRecoilState(searchedUserProfilePic)
     const [username, setUsername] = useRecoilState(searchedUserUsername)
@@ -37,7 +39,7 @@ const SearchUser = memo(() => {
     const fetchUserDetails = async () => {
         try {
             setLoading(true)
-            const response = await axios.get(`http://127.0.0.1:8787/api/v1/user/getUser?userId=${userId}`,{
+            const response = await axios.get(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/user/getUser?userId=${userId}`,{
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
@@ -48,7 +50,7 @@ const SearchUser = memo(() => {
                 setUsername(user.name)
                 setAboutMe(user.aboutMe)
                 if (user.profilePicExist){
-                    const response2 = await axios.post(`http://127.0.0.1:8787/api/v1/user/userImage`,{
+                    const response2 = await axios.post(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/user/userImage`,{
                         userId
                     }, {
                         headers: {
@@ -79,16 +81,16 @@ const SearchUser = memo(() => {
     
     return (
         <div className="w-full min-h-180">
-            <Appbar searchBar={true} edit={false} write={true} publish={false}  notifications={true}/>
+            <Appbar searchBar={true} edit={false} write={true} publish={false}  />
             {loading ? <SearchedUserLoader/> : 
             <div className="w-full px-5 lg:grid lg:grid-cols-12 lg:gap-8 pt-25 lg:mr-7.5">
                 <div className="hidden lg:block lg:col-span-1"></div>
                 <div className=" lg:col-span-6">
                     <div className="lg:flex-none sm:mx-16 md:mx-16 lg:mx-0 ">
-                        <Profile color={color} edit={false} profilePic={profilePic} username={username} />
+                        <Profile color={color} edit={false} profilePic={profilePic} username={username} aboutMe={aboutMe} />
                     </div>
                     <div className="min-w-auto sm:mx-16 md:mx-16 lg:mx-0">
-                        <div className="flex gap-6 border-b-1 mt-10 border-b-gray-200 pb-3 text-gray-600 ">
+                        <div className="flex gap-6 border-b-1 mt-6 border-b-gray-200 pb-3 text-gray-600 ">
                         </div>
                     </div>
                     <div className="">
@@ -116,4 +118,3 @@ const SearchUser = memo(() => {
 })
 
 export default SearchUser;
-// http://localhost:5173/random?userId=3c659a7d-a0a9-4e0b-aa06-28f34ef2d85a&number=1

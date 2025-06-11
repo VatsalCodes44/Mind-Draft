@@ -1,6 +1,10 @@
 import axios from "axios";
 import { atom, atomFamily, GetRecoilValue, selector } from "recoil";
-console.log("atom families loaded")
+
+const homeDraftsLibrary = atom<"home" | "drafts">({
+    key: "homeDraftsLibrary886",
+    default: "home"
+})
 
 interface Blog {
     id: string;
@@ -22,13 +26,14 @@ interface BlogsObject {
   [id: string]: Blog;
 }
 
+
 const getBlogsObjectAtom = atom <BlogsObject> ({
     key: "getBlogsAtom",
     default: selector({
         key: "getBlogsSelectorAtom",
         get: async () => {
             try{
-                const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/firstBulk",{
+                const response = await axios.get("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/firstBulk",{
                     headers: {
                         Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                     }, "responseType": "json"
@@ -67,7 +72,7 @@ const getImagesObjectAtom = atom <ImagesObject> ({
                         return false;
                     }
                 })
-                const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                const response = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images",{
                     blogIds,
                 },{
                     headers: {
@@ -97,7 +102,7 @@ const getAuthorImagesObjectAtom = atom <ImagesObject> ({
                 const authorIds = Object.values(blogs).map(blog => {
                     return blog.authorId
                 })
-                const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                const response = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images",{
                     blogIds: authorIds,
                 },{
                     headers: {
@@ -143,7 +148,7 @@ const getMyBlogsObjectAtom = atom <BlogsObject> ({
         key: "getMyBlogsSelectorAtom123",
         get: async () => {
             try {
-                const response = await axios.get("http://127.0.0.1:8787/api/v1/blog/myFirstBulk",{
+                const response = await axios.get("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/myFirstBulk",{
                     headers: {
                         Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                     }, "responseType": "json"
@@ -175,7 +180,7 @@ const getMyImagesObjectAtom = atom <ImagesObject> ({
                         return false;
                     }
                 })
-                const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                const response = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images",{
                     blogIds,
                 },{
                     headers: {
@@ -225,10 +230,9 @@ const searchedUserBlogsObjectAtom = atom <BlogsObject> ({
         key: "searchedUserSelectorAtom123",
         get: async ({get}) => {
             const userId = get(searchedUserId)
-            console.log("searchedUserBlogsObjectAtom")
             try {
                 if (userId){
-                    const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/myFirstBulk?userId=${userId}`,{
+                    const response = await axios.get(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/myFirstBulk?userId=${userId}`,{
                         headers: {
                             Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                         }, "responseType": "json"
@@ -265,7 +269,7 @@ const searchedUserImagesObjectAtom = atom <ImagesObject> ({
                             return false;
                         }
                     })
-                    const response = await axios.post(`http://127.0.0.1:8787/api/v1/blog/images?userId=${userId}`,{
+                    const response = await axios.post(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images?userId=${userId}`,{
                         blogIds,
                     },{
                         headers: {
@@ -344,8 +348,15 @@ const searchBlogLoading = atom<boolean>({
     default: true
 })
 
-export { getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentorImagesAtom, commentAtomFamily, commentImageAtomFamily, 
+
+
+
+
+
+
+
+export { homeDraftsLibrary, getBlogsObjectAtom, blogAtomFamily, getImagesObjectAtom, imageAtomFamily, commentorImagesAtom, commentAtomFamily, commentImageAtomFamily, 
     numberOfCommentsFetched, getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily, isFirstBlogsBundleSet, getAuthorImagesObjectAtom, 
     authorImageAtomFamily, isMyFirstBlogsBundleSet, searchedUserId, searchedUserBlogsObjectAtom, searchedUserImagesObjectAtom, searchedUserAtomFamily, 
-    searchedUserImageAtomFamily, isSearchedUserFirstBlogsBundleSet, searchBlogLoading}
+    searchedUserImageAtomFamily, isSearchedUserFirstBlogsBundleSet, searchBlogLoading }
 

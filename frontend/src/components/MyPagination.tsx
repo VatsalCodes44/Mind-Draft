@@ -19,7 +19,7 @@ const MyPagination = memo(({ requestNumber, setRequestNumber, homeDraftsLibrary 
             if(keys.length === 0) return;
 
             const cursor = keys[keys.length - 1]
-            const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/myBulk?cursor=${cursor}`, {
+            const response = await axios.get(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/myBulk?cursor=${cursor}`, {
                 headers: {
                     Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 },
@@ -28,8 +28,7 @@ const MyPagination = memo(({ requestNumber, setRequestNumber, homeDraftsLibrary 
             const myBlogs = response.data;
 
             const myBlogIds = Object.keys(myBlogs).filter(id => myBlogs[id]?.imageExist);
-            console.log(myBlogIds)
-            const response2 = await axios.post("http://127.0.0.1:8787/api/v1/blog/images", {
+            const response2 = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images", {
                 blogIds: myBlogIds,
             }, {
                 headers: {
@@ -43,7 +42,8 @@ const MyPagination = memo(({ requestNumber, setRequestNumber, homeDraftsLibrary 
             setMyNextBulkImageObject(myImages)
             setRequestNumber(p => p + 1)
         } catch (error) {
-            console.log("Failed to fetch blogs:", error)
+            setMyNextBulkBlogObject({})
+            setMyNextBulkImageObject({})
         } finally {
             fetching.current = false;
         }

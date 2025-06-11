@@ -3,6 +3,7 @@ import randomColor from "./randomColor";
 import date from "./date"
 import { useRecoilValue } from "recoil";
 import { commentImageAtomFamily } from "../store/blogs/atom";
+import { useNavigate } from "react-router-dom";
 
 type Comment = {
     authorId: string;
@@ -16,6 +17,7 @@ const Comments = memo(({comment, commentAtomNumber}: {comment: Comment, commentA
     const images = useRecoilValue(commentImageAtomFamily(commentAtomNumber))
     const color = useRef<string>(randomColor())
     const commentAuthorImage = images[comment.authorId]
+    const navigate = useNavigate()
     return (
         <div className="border-b-1 border-gray-100 pb-8 mb-8">
             <div className=" flex"> 
@@ -24,7 +26,9 @@ const Comments = memo(({comment, commentAtomNumber}: {comment: Comment, commentA
                 </div>
                 <div className=" text-md ">
                     <div className="flex ">
-                        <div className="font-semibold text-slate-900 hover:underline hover:decoration-gray-900 hover:cursor-pointer">
+                        <div onClick={() => {
+                            navigate(`/searchUser?userId=${comment.authorId}`)
+                        }} className="font-semibold text-slate-900 hover:underline hover:decoration-gray-900 hover:cursor-pointer">
                             {comment.Commentor.name}
                         </div>
                     </div>

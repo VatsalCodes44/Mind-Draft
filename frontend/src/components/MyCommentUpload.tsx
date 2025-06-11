@@ -69,7 +69,7 @@ const MyCommentUpload = memo( ({blogId, setBlogs}: {blogId: string, setBlogs: Se
 
                         }else{
                             setClicked(true)
-                            const response = await axios.post("http://127.0.0.1:8787/api/v1/blog/addComment",{
+                            const response = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/addComment",{
                                 blogId,
                                 authorId: window.sessionStorage.getItem("userId"),
                                 comment,

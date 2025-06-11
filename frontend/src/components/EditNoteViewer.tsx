@@ -7,7 +7,7 @@ import { editBlog as eBlog } from "../store/blogUploadEdit/atom";
 const EditNoteViewer = memo(() => {
     const editBlog = useRecoilValue(eBlog)
     return (
-        <NoteViewer editorStateEdit={editBlog?.editorState} />
+        <NoteViewer editorStateEdit={editBlog?.editorState || undefined} />
     )
 })
 

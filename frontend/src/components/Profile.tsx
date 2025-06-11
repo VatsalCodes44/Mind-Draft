@@ -47,7 +47,7 @@ const Profile = memo(({color, edit, profilePic, username, aboutMe}: {color:strin
                         </div>
                     </div>
                 </div>
-                <div className="sm:hidden font-semibold font-mono mt-4">
+                <div className="lg:hidden font-semibold font-mono mt-6">
                     {aboutMe}
                 </div>
             </div>

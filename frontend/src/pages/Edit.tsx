@@ -17,7 +17,6 @@ const Edit = memo(() => {
     const [param] = useSearchParams()
     const myBlogId = param.get("myBlogId")
     const number = param.get("number")
-    console.log(myBlogId)
     if (!myBlogId || !number){
         navigate("/me");
         return;

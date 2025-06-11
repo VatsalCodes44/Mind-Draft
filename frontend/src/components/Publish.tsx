@@ -45,13 +45,13 @@ const Publish = memo(() => {
             }
             formData.append("title", title)
             formData.append("content", htmlContent)
-            formData.append("imageExist", imageExist)
-            formData.append("published", published.toString())
+            formData.append("imageExist", imageExist ? "true" : "false")
+            formData.append("published", published ? "true" : "false")
             formData.append("summary",summary)
             formData.append("time", getDateTime())
             formData.append("editorState", editorState)
             
-            const response = await axios.post("http://localhost:8787/api/v1/blog/upload",formData, {
+            const response = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/upload",formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                     "Authorization": `Bearer ${sessionStorage.getItem("token")}`,

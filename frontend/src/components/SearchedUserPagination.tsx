@@ -19,7 +19,7 @@ const SearchedUserPagination = memo(({ requestNumber, setRequestNumber, homeDraf
             if(keys.length === 0) return;
 
             const cursor = keys[keys.length - 1]
-            const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/myBulk?cursor=${cursor}&&userId=${userId}`, {
+            const response = await axios.get(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/myBulk?cursor=${cursor}&&userId=${userId}`, {
                 headers: {
                     Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 },
@@ -28,8 +28,7 @@ const SearchedUserPagination = memo(({ requestNumber, setRequestNumber, homeDraf
             const userBlogs = response.data;
 
             const userBlogIds = Object.keys(userBlogs).filter(id => userBlogs[id]?.imageExist);
-            console.log(userBlogIds)
-            const response2 = await axios.post("http://127.0.0.1:8787/api/v1/blog/images", {
+            const response2 = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images", {
                 blogIds: userBlogIds,
             }, {
                 headers: {
@@ -43,7 +42,8 @@ const SearchedUserPagination = memo(({ requestNumber, setRequestNumber, homeDraf
             setUserNextBulkImageObject(userImages)
             setRequestNumber(p => p + 1)
         } catch (error) {
-            console.log("Failed to fetch blogs:", error)
+            setUserNextBulkBlogObject({})
+            setUserNextBulkImageObject({})
         } finally {
             fetching.current = false;
         }

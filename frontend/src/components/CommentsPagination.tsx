@@ -23,12 +23,9 @@ const CommentsPagination = memo(({ commentRequestNumber, setCommentRequestNumber
     const onBottomReach = async () => {
         if (fetching.current) return;
         fetching.current = true;
-        console.log("resolved")
-            console.log(commentsFetched)
-            console.log(totalComments)
             try {
                 const cursor = currentComments[currentComments.length - 1].id
-                const response = await axios.get(`http://localhost:8787/api/v1/blog/getNextComments?cursor=${cursor}`, {
+                const response = await axios.get(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/getNextComments?cursor=${cursor}`, {
                     headers: {
                         blogId,
                         Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
@@ -40,8 +37,7 @@ const CommentsPagination = memo(({ commentRequestNumber, setCommentRequestNumber
                     const commentorIds = comments.map(comment => {
                         return comment.authorId
                     })
-                    console.log("djnkjkc", commentorIds)
-                    const response2 = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                    const response2 = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images",{
                         blogIds: commentorIds,
                     },{
                         headers: {
@@ -52,11 +48,9 @@ const CommentsPagination = memo(({ commentRequestNumber, setCommentRequestNumber
         
                     if (response2){
                         const commentorImages = response2.data
-                        const commentsFetched = comments.length
                         setNextComments(comments)
                         setNextCommentorImages(commentorImages)
                         setCommentRequestNumber(p => p + 1)
-                        console.log(commentsFetched)
                         setCommentsFetched( p=> p +comments.length)
                     }
                 }

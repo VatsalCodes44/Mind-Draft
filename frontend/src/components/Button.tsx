@@ -2,12 +2,13 @@ import { memo } from "react";
 
 interface buttonInputs {
     type: string,
-    onClick: () => void
+    onClick: () => void,
+    clicked: boolean
 }
-const Button = memo(({type, onClick}: buttonInputs) => {
+const Button = memo(({type, onClick, clicked}: buttonInputs) => {
     return (
         <div className="">
-            <button onClick={onClick} className="mt-4 w-full bg-stone-900 text-white p-2 rounded-lg hover:cursor-pointer hover:bg-black"> {type === "signup" ? "Sign up" : "Sign in" } </button>
+            <button onClick={onClick} className={`${clicked ? "bg-gray-700 pointer-events-none" : "bg-gray-950" } mt-4 w-full text-white p-2 rounded-lg hover:cursor-pointer`} > {type === "signup" ? "Sign up" : "Sign in" } </button>
         </div>
     )
 })

@@ -25,6 +25,7 @@ const SearchedUserOneBlog = memo(({ blogId, atomNumber }: {blogId: string, atomN
     const [userBlogs, setUserBlogs] = useRecoilState(searchedUserAtomFamily(atomNumber));
     const userBlogsImage = useRecoilValue(searchedUserImageAtomFamily(atomNumber))
     const profilePic = useRecoilValue(searchedUserProfilePic)
+    const [myProfilePic, setMyProfilePic] = useState<string | null>(sessionStorage.getItem("profilePic"))
     const username = useRecoilValue(searchedUserUsername)
     const [commentRequestNumber, setCommentRequestNumber] = useState<number>(1)
     const setFirstComments = useSetRecoilState(commentAtomFamily(1))
@@ -34,7 +35,7 @@ const SearchedUserOneBlog = memo(({ blogId, atomNumber }: {blogId: string, atomN
     useEffect(() => {
         const getComments = async () => {
             try {
-                const response = await axios.get("http://localhost:8787/api/v1/blog/getFirstComments", {
+                const response = await axios.get("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/getFirstComments", {
                     headers: {
                         blogId: blogId,
                         Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
@@ -46,7 +47,7 @@ const SearchedUserOneBlog = memo(({ blogId, atomNumber }: {blogId: string, atomN
                     const commentorIds = comments.map(comment => {
                         return comment.authorId
                     })
-                    const response2 = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                    const response2 = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images",{
                         blogIds: commentorIds,
                     },{
                         headers: {
@@ -115,7 +116,7 @@ const SearchedUserOneBlog = memo(({ blogId, atomNumber }: {blogId: string, atomN
                 </div>
                 
                 <div className={`mt-15`}>
-                    {userBlogs[blogId].imageExist ? <img src={userBlogsImage[blogId].image} alt="loading" className=" w-full h-auto rounded-2xl"/> : <div></div> }
+                    {userBlogsImage[blogId] ? <img src={userBlogsImage[blogId].image} alt="loading" className=" w-full h-auto rounded-2xl"/> : <div></div> }
                 </div>
                 <div className="mt-10 border-b-1 border-gray-100 pb-15 ">
                     <div className="text-md sm:text-lg md:text-xl mx-2" dangerouslySetInnerHTML={{ __html: userBlogs[blogId].content }}/>
@@ -126,7 +127,7 @@ const SearchedUserOneBlog = memo(({ blogId, atomNumber }: {blogId: string, atomN
                 <div className=" flex"> 
                     <div className={`hover:cursor-pointer mr-3 text-center rounded-full flex justify-center`} >
                         <div className="h-9 w-9 text-md rounded-full">
-                                {profilePic ? <AuthorImage profilePic={profilePic}/> : <ImageNotExist username={username ? username[0].toUpperCase() : ""} color={color.current}/>}
+                                {myProfilePic ? <AuthorImage profilePic={myProfilePic}/> : <ImageNotExist username={username ? username[0].toUpperCase() : ""} color={color.current}/>}
                         </div>
                     </div>
                     <div className=" text-md font-mono mt-2">

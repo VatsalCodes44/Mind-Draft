@@ -20,7 +20,7 @@ const Pagination = memo(({ requestNumber, setRequestNumber }: { requestNumber: n
             if (keys.length === 0) return;
 
             const cursor = keys[keys.length - 1];
-            const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/bulk?cursor=${cursor}`, {
+            const response = await axios.get(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/bulk?cursor=${cursor}`, {
                 headers: {
                     Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
                 },
@@ -29,7 +29,7 @@ const Pagination = memo(({ requestNumber, setRequestNumber }: { requestNumber: n
             const blogs = response.data;
 
             const blogIds = Object.keys(blogs).filter(id => blogs[id]?.imageExist);
-            const response2 = await axios.post("http://127.0.0.1:8787/api/v1/blog/images", {
+            const response2 = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images", {
                 blogIds,
             }, {
                 headers: {
@@ -40,7 +40,7 @@ const Pagination = memo(({ requestNumber, setRequestNumber }: { requestNumber: n
             const images = response2.data;
 
             const authorIds = Object.values(response2).map(blog => blog.authorId);
-            const response3 = await axios.post("http://127.0.0.1:8787/api/v1/blog/images", {
+            const response3 = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images", {
                 blogIds: authorIds,
             }, {
                 headers: {

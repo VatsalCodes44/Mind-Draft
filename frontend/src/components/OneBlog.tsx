@@ -32,7 +32,7 @@ const OneBlog = memo(({ blogId, atomNumber}: {blogId: string, atomNumber: number
     useEffect(() => {
         const getComments = async () => {
             try{
-                const response = await axios.get("http://localhost:8787/api/v1/blog/getFirstComments", {
+                const response = await axios.get("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/getFirstComments", {
                     headers: {
                         blogId,
                         Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
@@ -44,7 +44,7 @@ const OneBlog = memo(({ blogId, atomNumber}: {blogId: string, atomNumber: number
                     const commentorIds = comments.map(comment => {
                         return comment.authorId
                     })
-                    const response2 = await axios.post("http://127.0.0.1:8787/api/v1/blog/images",{
+                    const response2 = await axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images",{
                         blogIds: commentorIds,
                     },{
                         headers: {

@@ -9,7 +9,7 @@ const Blogs = memo(() => {
     return (
         <div className="">
             <div>
-                <Appbar searchBar={true} publish={false} edit={false} write={true} notifications={true} />
+                <Appbar searchBar={true} publish={false} edit={false} write={true} />
             </div>
             <Suspense fallback={<div className=" pt-18  max-w-3xl w-full mx-auto">
                 <div className="mx-8 sm:mx-16 md:mx-16 lg:mx-0">

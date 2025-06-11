@@ -105,7 +105,7 @@ const AutoComplete2 = () => {
         setBlogSuggestions(cachedBlogsResults.slice(0, 4));
       } else {
         const response = await axios.get(
-          `http://127.0.0.1:8787/api/v1/blog/getSuggestions?query=${query}`,
+          `https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/getSuggestions?query=${query}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -127,7 +127,7 @@ const AutoComplete2 = () => {
         setAuthorSuggestions(cachedAuthorResults.slice(0, 4));
       } else {
         const response2 = await axios.get(
-          `http://127.0.0.1:8787/api/v1/user/getAuthorSuggestions?query=${query}`,
+          `https://backend-medium.mahajanvatsal44.workers.dev/api/v1/user/getAuthorSuggestions?query=${query}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -137,7 +137,7 @@ const AutoComplete2 = () => {
         );
         const authors: AuthorSuggestionType[] = response2.data || []
         const authorIds = authors.filter(x => x.profilePicExist).map(x => x.id);
-        const response3 = await axios.post(`http://127.0.0.1:8787/api/v1/blog/images`,{
+        const response3 = await axios.post(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images`,{
           blogIds: authorIds
         }, {
             headers: {
@@ -376,7 +376,7 @@ export const AutoComplete = () => {
             if (cachedResults.length > 0) {
                 setSuggestions(cachedResults)
             } else {
-                const response = await axios.get(`http://127.0.0.1:8787/api/v1/blog/getSuggestions?query=${query}`,{
+                const response = await axios.get(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/getSuggestions?query=${query}`,{
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${window.sessionStorage.getItem("token")}`
@@ -436,7 +436,7 @@ const Suggestion = ({suggestion, highlight}: {suggestion: suggestionType, highli
     const getHighlitedText = (text: string, highlight: string) => {
         return text.split(new RegExp(`(${highlight})`, 'gi'))
     }
-    console.log(getHighlitedText(suggestion.title, highlight))
+    (getHighlitedText(suggestion.title, highlight))
     return  (
         <div className="truncate w-full p-1 h-8 hover:bg-gray-50 hover:cursor-pointer" onClick={() => {
             const results = localStorage.getItem("cachedSearchResults") || "[]";
@@ -446,7 +446,6 @@ const Suggestion = ({suggestion, highlight}: {suggestion: suggestionType, highli
                 title: suggestion.title
             })
             localStorage.setItem("cachedSearchResults",JSON.stringify(storedArray))
-            console.log("done")
         }} >
             {
                 getHighlitedText(suggestion.title, highlight).map((x,i) => {

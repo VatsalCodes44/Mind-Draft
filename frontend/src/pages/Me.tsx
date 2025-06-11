@@ -1,21 +1,24 @@
-import { memo, Suspense, useState } from "react";
+import { memo, Suspense } from "react";
 import Profile from "../components/Profile";
 import Appbar from "../components/Appbar";
 import BlogsLoader from "../components/BlogsLoader";
 import UserProfile from "../components/UserProfile";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import MyBlogsComponent from "../components/MyBlogsComponent";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { userProfileColor } from "../store/userInfo/atom";
+import { homeDraftsLibrary as hdl } from "../store/blogs/atom";
 
 const Me = memo(() => {
     const color = useRecoilValue(userProfileColor)
     const navigate = useNavigate()
-    const [homeDraftsLibrary, setHomeDraftsLibrary] = useState<"home" | "drafts">("home")
-
+    const [homeDraftsLibrary, setHomeDraftsLibrary] = useRecoilState(hdl)
+    if (!sessionStorage.getItem("token")){
+        return <Navigate to={"/signin"} />
+    }
     return (
         <div className="w-full min-h-180">
-            <Appbar searchBar={true} edit={false} write={true} publish={false}  notifications={true}/>
+            <Appbar searchBar={true} edit={false} write={true} publish={false}  />
             <div className="w-full px-5 lg:grid lg:grid-cols-12 lg:gap-8 pt-25 lg:mr-7.5">
                 <div className="hidden lg:block lg:col-span-1"></div>
                 <div className=" lg:col-span-6">
@@ -23,7 +26,7 @@ const Me = memo(() => {
                         <Profile color={color} edit={true} profilePic={sessionStorage.getItem("profilePic")} username={sessionStorage.getItem("username")} aboutMe={sessionStorage.getItem("aboutMe")} />
                     </div>
                     <div className="min-w-auto sm:mx-16 md:mx-16 lg:mx-0">
-                        <div className="flex gap-6 border-b-1 mt-10 border-b-gray-200 pb-3 text-gray-600 ">
+                        <div className="flex gap-6 border-b-1 mt-6 border-b-gray-200 pb-3 text-gray-600 ">
                             <div onClick={() => {
                                 setHomeDraftsLibrary("home")
                             }} className={`${homeDraftsLibrary == "home" ? "text-black underline underline-offset-17" : ""} hover:cursor-pointer`}>

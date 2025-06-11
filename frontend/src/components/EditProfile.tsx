@@ -25,7 +25,7 @@ const EditProfile = memo(() => {
         formData.append("name", username)
         formData.append("aboutMe", aboutMe || "")
         
-        axios.put("http://localhost:8787/api/v1/user/updateUser",formData, {
+        axios.put("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/user/updateUser",formData, {
           headers: {
             "Content-Type": "multipart/form-data",
             "Authorization": `Bearer ${sessionStorage.getItem("token")}`,

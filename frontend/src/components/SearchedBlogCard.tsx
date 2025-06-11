@@ -45,12 +45,12 @@ const SearchedBlogCard = memo(({userBlog, homeDraftsLibrary, atomNumber}: {userB
         }
         return (
             <div className=" flex justify-center mt-4">
-                <div className="max-w-3xl w-full mx- sm:mx-16 md:mx-16 lg:mx-0 border-b-1 border-slate-100 mt-4 pb-6 hover:cursor-pointer">
+                <div className="max-w-3xl w-full mx- sm:mx-16 md:mx-16 lg:mx-0 border-b-1 border-slate-100 mt-4 pb-6 ">
                     <div className="flex text-sm">
                         <div className="h-6 w-6 text-xs mr-2 rounded-full">
                             {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={userBlog.author.name.trim()[0].toUpperCase()} color={color}/>}
                         </div>
-                        <div className="font-mono font-thin hover:underline hover:underline-offset-2 pt-0.5">
+                        <div className="font-mono font-thin pt-0.5">
                             {userBlog.author.name.length > 30 ? `${userBlog.author.name.slice(0,30)}.` : userBlog.author.name }
                         </div>
                     </div>
@@ -68,7 +68,7 @@ const SearchedBlogCard = memo(({userBlog, homeDraftsLibrary, atomNumber}: {userB
                         </div>
                         <div className="col-span-2 flex justify-end">
                             <div>
-                                {userBlog.imageExist ? <div><img src={images[userBlog.id].image} className="h-15 w-25 sm:h-20 sm:w-33 md:h-25 md:w-41 rounded-sm" alt="" /></div> : <div> </div>}
+                                {images[userBlog.id] ? <div><img src={images[userBlog.id].image} className="h-15 w-25 sm:h-20 sm:w-33 md:h-25 md:w-41 rounded-sm" alt="" /></div> : <div> </div>}
                             </div>
                         </div>
                     </div>

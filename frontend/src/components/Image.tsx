@@ -17,7 +17,11 @@ const Image = memo(({blogId, atomNumber}: {blogId: string, atomNumber: number}) 
     </div>
     )
     } else {
-        return <img src={images[blogId].image || ""} alt="loading" className=" w-full h-auto rounded-2xl"/>
+        return (
+            <div>
+                {images[blogId] ? <img src={images[blogId].image} alt="loading" className=" w-full h-auto rounded-2xl"/> : <div></div> }
+            </div>
+        )
     }
 })
 

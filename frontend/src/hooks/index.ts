@@ -32,7 +32,7 @@ export function useClapDebounce(blogId:string, likes: number, firstRender: boole
             setFirstRender(false)
         } else{
             const timeout = setTimeout(async() => {
-            axios.post("http://localhost:8787/api/v1/blog/likesUpdate",{
+            axios.post("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/likesUpdate",{
                     blogId,
                     likes
                 }, {

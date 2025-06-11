@@ -5,6 +5,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { userProfileColor } from "../store/userInfo/atom";
 import randomColor from "./randomColor";
+import { homeDraftsLibrary } from "../store/blogs/atom";
 
 interface blogSuggestionType {
     id: string,
@@ -17,7 +18,7 @@ interface AuthorSuggestionType {
     profilePic? : string
 }
 
-const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: {searchBar: boolean, write: boolean, publish: boolean, edit:boolean, notifications: boolean}) => {
+const AppbarComponent = memo(({searchBar, write, publish, edit}: {searchBar: boolean, write: boolean, publish: boolean, edit:boolean}) => {
     const navigate = useNavigate()
     const setHtmlContent = useSetRecoilState(htmlContent)
     const setPreview = useSetRecoilState(preview)
@@ -36,11 +37,12 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
     const [shouldFocusBeTrue, setShouldFocusIsTrue] = useState<boolean>(false)
     const [showSearchBar, setShowSearchBar] = useState<boolean>(false)
     const [profilePic, setProfilePic] = useState<string | null>(null);
+    const setHomeDraftsLibrary = useSetRecoilState(homeDraftsLibrary) 
     const [input, setInput] = useState("")
     useEffect(() => {
-        setTimeout(() => {
+        // setTimeout(() => {
             setProfilePic(sessionStorage.getItem("profilePic"))
-        }, 300) 
+        // }, 300) 
     }, []);
     useEffect(() => {
         function handleClickOutsideInput(event: MouseEvent) {
@@ -201,13 +203,6 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
                             </div>
                         </div>
                     </div>
-                    <div className={` ${notifications ? "" : "hidden"} `} >
-                        <div className=" mt-1.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={0.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                            </svg>
-                        </div>
-                    </div>
 
                     <div ref={buttonRef} onClick={() => {
                             setDropDown(p => !p);
@@ -245,25 +240,10 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
                                 Profile
                             </span>
                         </div>
-                        <div className="flex justify-start pl-5 py-3 gap-4 items-center ">
-                            <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            className="w-5 h-5"
-                            aria-label="Lists"
-                            >
-                            <path d="M6.44 6.69a1.5 1.5 0 0 1 1.06-.44h9a1.5 1.5 0 0 1 1.06.44l.354-.354-.353.353A1.5 1.5 0 0 1 18 7.75v14l-5.694-4.396-.306-.236-.306.236L6 21.75v-14c0-.398.158-.78.44-1.06Z" />
-                            <path d="M12.5 2.75h-8a2 2 0 0 0-2 2v11.5" />
-                            </svg>
-                            <span>
-                                Library
-                            </span>
-                        </div>
-                        <div className="flex justify-start pl-5 py-3 gap-4 items-center">
+                        <div onClick={() => {
+                          setHomeDraftsLibrary("drafts")
+                          navigate("/me")
+                        }} className="flex justify-start pl-5 py-3 gap-4 items-center">
                             <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -300,7 +280,10 @@ const AppbarComponent = memo(({searchBar, write, publish, edit, notifications}: 
                                 Write
                             </span>
                         </div>
-                        <div className="flex hover:text-red-600 justify-start border-t-1 border-gray-300 pl-5 py-3 gap-4 items-center ">
+                        <div onClick={() => {
+                          navigate("/signin")
+                          sessionStorage.clear()
+                        }} className="flex hover:text-red-600 justify-start border-t-1 border-gray-300 pl-5 py-3 gap-4 items-center ">
                             <span>
                                 Log out
                             </span>
@@ -409,7 +392,7 @@ const AutoComplete = ({ input, setInput, showResults, setShowSearchBar, setShowR
           setBlogSuggestions(cachedBlogsResults.slice(0, 4));
         } else {
           const response = await axios.get(
-            `http://127.0.0.1:8787/api/v1/blog/getSuggestions?query=${query}`,
+            `https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/getSuggestions?query=${query}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -431,7 +414,7 @@ const AutoComplete = ({ input, setInput, showResults, setShowSearchBar, setShowR
           setAuthorSuggestions(cachedAuthorResults.slice(0, 4));
         } else {
           const response2 = await axios.get(
-            `http://127.0.0.1:8787/api/v1/user/getAuthorSuggestions?query=${query}`,
+            `https://backend-medium.mahajanvatsal44.workers.dev/api/v1/user/getAuthorSuggestions?query=${query}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -441,7 +424,7 @@ const AutoComplete = ({ input, setInput, showResults, setShowSearchBar, setShowR
           );
           const authors: AuthorSuggestionType[] = response2.data || []
           const authorIds = authors.filter(x => x.profilePicExist).map(x => x.id);
-          const response3 = await axios.post(`http://127.0.0.1:8787/api/v1/blog/images`,{
+          const response3 = await axios.post(`https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/images`,{
             blogIds: authorIds
           }, {
               headers: {

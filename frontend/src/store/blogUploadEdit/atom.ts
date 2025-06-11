@@ -1,5 +1,5 @@
 import {atom, selector, GetRecoilValue} from "recoil"
-import { getMyImagesObjectAtom, myImageAtomFamily } from "../blogs/atom"
+import { getMyImagesObjectAtom } from "../blogs/atom"
 
 
 const getImage = atom <File | null> ({
@@ -57,14 +57,14 @@ const editBlog = atom<Blog>({
 })
 
 const editImage = atom<string | null>({
-  key: "editImage123",
+  key: "editImage1253",
   default: selector({
     key: "editBlogSelector123",
     get: ({ get }: {get: GetRecoilValue}) => {
         const blog = get(editBlog)
+        const imageObject = get(getMyImagesObjectAtom);
         let image = null;
-        if (blog.imageExist){
-            const imageObject = get(getMyImagesObjectAtom);
+        if (imageObject[blog.id]){
             image= imageObject[blog.id].image
         }
         return image;

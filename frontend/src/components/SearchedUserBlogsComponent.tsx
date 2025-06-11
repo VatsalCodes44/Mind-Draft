@@ -10,7 +10,6 @@ const SearchedUserBlogsComponent = memo(({homeDraftsLibrary, userId}: {homeDraft
     const userFirstImages = useRecoilValue(searchedUserImagesObjectAtom)
     const setUserBlogAtomFamily = useSetRecoilState(searchedUserAtomFamily(1))   
     const setUserImagesAtomFamily = useSetRecoilState(searchedUserImageAtomFamily(1)) 
-    console.log(1111111111111)
     const [isSearchedUserBlogsBundleSet, setIsSearcheduserBlogsBundleSet] = useRecoilState(isSearchedUserFirstBlogsBundleSet)
     useEffect(() => {
         if (!isSearchedUserBlogsBundleSet) {

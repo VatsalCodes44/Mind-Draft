@@ -3,7 +3,7 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import {  htmlContent as content, preview, editorState as eState, editImage as eImage, editBlog as eBlog } from "../store/blogUploadEdit/atom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { getMyBlogsObjectAtom, getMyImagesObjectAtom, myBlogAtomFamily, myImageAtomFamily } from "../store/blogs/atom";
+import { myBlogAtomFamily, myImageAtomFamily } from "../store/blogs/atom";
 
 async function objectURLToFile(objectUrl: string, fileName: string): Promise<File> {
   const response = await fetch(objectUrl);
@@ -30,7 +30,7 @@ const EditPublish = memo(({myBlogId, atomNumber}:{myBlogId: string, atomNumber: 
     const handleApi = useCallback(async (published: boolean) => {
         const formData = new FormData()
         if (editBlog.imageExist && editImage){
-            if (myBlogs[myBlogId].imageExist && myBlogImages[myBlogId].image == editImage){
+            if (myBlogs[myBlogId].imageExist && myBlogImages[myBlogId] && myBlogImages[myBlogId].image == editImage){
             } else {
                 formData.append("image", await objectURLToFile(editImage, myBlogId))
                 setImageChanged(true)
@@ -58,7 +58,7 @@ const EditPublish = memo(({myBlogId, atomNumber}:{myBlogId: string, atomNumber: 
         formData.append("editorState", editorState)
         formData.append("blogId", myBlogId)
         
-        axios.put("http://localhost:8787/api/v1/blog/edit",formData, {
+        axios.put("https://backend-medium.mahajanvatsal44.workers.dev/api/v1/blog/edit",formData, {
           headers: {
             "Content-Type": "multipart/form-data",
             "Authorization": `Bearer ${sessionStorage.getItem("token")}`,

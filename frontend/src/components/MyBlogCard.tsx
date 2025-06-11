@@ -45,12 +45,12 @@ const MyBlogCard = memo(({myBlog, homeDraftsLibrary, atomNumber}: {myBlog: Blog,
         }
         return (
             <div className=" flex justify-center mt-4">
-                <div className="max-w-3xl w-full mx- sm:mx-16 md:mx-16 lg:mx-0 border-b-1 border-slate-100 mt-4 pb-6 hover:cursor-pointer">
+                <div className="max-w-3xl w-full mx- sm:mx-16 md:mx-16 lg:mx-0 border-b-1 border-slate-100 mt-4 pb-6">
                     <div className="flex text-sm">
                         <div className="h-6 w-6 text-xs mr-2 rounded-full">
                             {profilePic ? <Image profilePic={profilePic}/> : <ImageNotExist username={myBlog.author.name.trim()[0].toUpperCase()} color={color}/>}
                         </div>
-                        <div className="font-mono font-thin hover:underline hover:underline-offset-2 pt-0.5">
+                        <div className="font-mono font-thin pt-0.5">
                             {myBlog.author.name.length > 30 ? `${myBlog.author.name.slice(0,30)}.` : myBlog.author.name }
                         </div>
                     </div>
