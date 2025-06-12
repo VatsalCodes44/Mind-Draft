@@ -530,7 +530,7 @@ const Suggestion = ({suggestion,  highlight, setInput, setShowSearchBar, setShow
     <div
       className="truncate h-8 hover:bg-gray-50  hover:cursor-pointer"
       onClick={() => {
-        // navigate(`/searchedBlog?blogId=${suggestion.id}`);
+        navigate(`/searchedBlog?blogId=${suggestion.id}`);
         setInput("");
         const results = localStorage.getItem("cachedBlogResults") || "[]";
         const storedArray: blogSuggestionType[] = JSON.parse(results);
@@ -572,7 +572,7 @@ const AuthorSuggestion = ({suggestion, setInput, setShowSearchBar, setShowResult
     <div
       className="truncate h-10 hover:bg-gray-50 hover:cursor-pointer flex items-center gap-2 mb-4"
       onClick={() => {
-        // navigate(`/searchedBlog?blogId=${suggestion.id}`);
+        navigate(`/searchedBssslog?blogId=${suggestion.id}`);
         setInput("");
         const results = localStorage.getItem("cachedAuthorResults") || "[]";
         const storedArray: AuthorSuggestionType[] = JSON.parse(results);
