@@ -294,7 +294,7 @@ const AppbarComponent = memo(({searchBar, write, publish, edit}: {searchBar: boo
             {showSearchBar && searchBar && 
             <div className="absolute w-full">
                 <div className="relative w-3xs mx-auto sm:hidden">
-                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 ">
                     <svg
                         className="w-4 h-4 text-black"
                         aria-hidden="true"
@@ -316,10 +316,14 @@ const AppbarComponent = memo(({searchBar, write, publish, edit}: {searchBar: boo
                     value={input}
                     ref = {focusInputMobile}
                     placeholder="Search blogs..."
-                    onFocus={() => setShowResults(true)}
+                    onFocus={() => {
+                      console.log(99)
+                      setShowResults(true)}}
                     onChange={(e) => setInput(e.target.value)}
                     className="bg-gray-100 custom-caret py-2 px-10 rounded-full focus:outline-0"
-                    onClick={() => setShowResults(true)}
+                    onClick={() => {
+                      console.log(99)
+                      setShowResults(true)}}
                     onKeyDown={(e) => {
                         if (e.key == "Backspace" && input == "") setShowResults(false)
                     }}
@@ -529,7 +533,9 @@ const Suggestion = ({suggestion,  highlight, setInput, setShowSearchBar, setShow
   return (
     <div
       className="truncate h-8 hover:bg-gray-50  hover:cursor-pointer"
-      onClick={() => {
+      onMouseDown={() => {
+        alert("hello")
+        console.log("hi")
         navigate(`/searchedBlog?blogId=${suggestion.id}`);
         setInput("");
         const results = localStorage.getItem("cachedBlogResults") || "[]";
@@ -547,7 +553,6 @@ const Suggestion = ({suggestion,  highlight, setInput, setShowSearchBar, setShow
           });
           localStorage.setItem("cachedBlogResults", JSON.stringify(storedArray));
         }
-        navigate(`/SingleSearchedBlog?blogId=${suggestion.id}`)
         window.scrollTo(0,0)
         setShowSearchBar(false)
         setShowResults(false)
@@ -571,8 +576,9 @@ const AuthorSuggestion = ({suggestion, setInput, setShowSearchBar, setShowResult
     return (
     <div
       className="truncate h-10 hover:bg-gray-50 hover:cursor-pointer flex items-center gap-2 mb-4"
-      onClick={() => {
-        navigate(`/searchedBssslog?blogId=${suggestion.id}`);
+      onMouseDown={() => {
+        navigate(`/searchUser?userId=${suggestion.id}`)
+        console.log("hi")
         setInput("");
         const results = localStorage.getItem("cachedAuthorResults") || "[]";
         const storedArray: AuthorSuggestionType[] = JSON.parse(results);
@@ -591,7 +597,6 @@ const AuthorSuggestion = ({suggestion, setInput, setShowSearchBar, setShowResult
           });
           localStorage.setItem("cachedAuthorResults", JSON.stringify(storedArray));
         }
-        navigate(`/searchUser?userId=${suggestion.id}`)
         window.scrollTo(0,0)
         setShowSearchBar(false)
         setShowResults(false)

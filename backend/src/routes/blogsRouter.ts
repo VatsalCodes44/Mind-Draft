@@ -1,9 +1,10 @@
 import { Hono } from 'hono'
 import { jwtVerification } from '../middlewares/middlewares'
-import { addComment, bulkBlogs, client, createBlog, deleteBlog, editBlog, firstBulkBlogs, getBlog, getFirstComments, getNextComments, likesUpdate, myBulkBlogs, myFirstBulk, suggestions } from '../db/prismaFunctions'
-import { blogPostSchema } from "common-medium-project";
+import { addComment, bulkBlogs, client, createBlog, deleteBlog, editBlog, firstBulkBlogs, firstSearchResult, getBlog, getFirstComments, getNextComments, likesUpdate, myBulkBlogs, myFirstBulk, searchResults, suggestions } from '../db/prismaFunctions'
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client/extension';
+
+
 
 const blogsRouter = new Hono<{
   Bindings: {
@@ -27,6 +28,17 @@ interface createBlogFunction {
     date: string;
     authorId: string;
 }
+
+export const blogPostSchema = z.object({
+    image: z.instanceof(File).optional().nullable(),
+    title: z.string().min(1),
+    summary: z.string(),
+    content: z.string().min(10),
+    editorState: z.string(),
+    time: z.string(),
+    imageExist: z.boolean(),
+    published: z.boolean()
+})
 
 blogsRouter.post("/upload", async (c) => {
   
@@ -107,6 +119,7 @@ blogsRouter.post("/upload", async (c) => {
       const fileName: string = response.id;
       try{
         const r2Object = await c.env.MY_BUCKET.put(fileName, file)
+        console.log(r2Object, "564756877763")
         if (r2Object){
           return c.json({
             message: response.id
@@ -191,7 +204,6 @@ interface editPost {
 }
 blogsRouter.put("/edit", async (c) => {
   
-  console.log("...........................")
   const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
   const formData: FormData = await c.req.formData()
   const file = formData.get("image")
@@ -262,7 +274,6 @@ blogsRouter.put("/edit", async (c) => {
       try{
         const r2Object = await c.env.MY_BUCKET.put(fileName, file)
         if (r2Object){
-          console.log("''''''''''''''''''''''''''''''''")
           return c.json({
             message: response.id
           })
@@ -363,63 +374,70 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 
 // return a no. of images with array of blogIds.
 blogsRouter.post("/images", async (c) => {
-  try {
-    const body: { blogIds: string[] } = await c.req.json();
-    const blogIds = body.blogIds;
-    if (!blogIds || !Array.isArray(blogIds)) {
-      return c.json({ message: "invalid parameters" }, 400);
-    }
-
-    const promises: Promise<R2ObjectBody | null>[] = blogIds.map((id) => c.env.MY_BUCKET.get(id));
-    const r2Objects = await Promise.all(promises);
-
-    const imagesBase64: ({
-      id: string,
-      image: string
-    } | null) [] = await Promise.all(
-      r2Objects.map(async (obj) => {
-        if (!obj || !obj.body) return null;
-
-        const arrayBuffer = await streamToArrayBuffer(obj.body);
-        const base64 = arrayBufferToBase64(arrayBuffer);
-        const contentType = obj.httpMetadata?.contentType || "image/jpeg";
-
-        return {
-          id: obj.key,
-          image: `data:${contentType};base64,${base64}`
-        };
-      })
-    );
-
-    // Filter out nulls
-    const filteredImages: { id: string, image: string }[] = imagesBase64.filter((x): x is { id: string, image: string } => {
-      if (x !== null && x !== undefined){
-        return true
-      } else {
-        return false
+  const retries = 3;
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const body: { blogIds: string[] } = await c.req.json();
+      const blogIds = body.blogIds;
+      console.log(blogIds)
+      if (!blogIds || !Array.isArray(blogIds)) {
+        return c.json({ message: "invalid parameters" }, 400);
       }
-    });
-
-    interface ImageType {
-      id: string,
-      image: string
-    }
-    interface ImagesObjType {
-        [id: string]: {
-          id: string,
-          image: string
+  
+      const promises: Promise<R2ObjectBody | null>[] = blogIds.map((id) => c.env.MY_BUCKET.get(id));
+      const r2Objects = await Promise.all(promises);
+      console.log(r2Objects)
+      const imagesBase64: ({
+        id: string,
+        image: string
+      } | null) [] = await Promise.all(
+        r2Objects.map(async (obj) => {
+          if (!obj || !obj.body) return null;
+  
+          const arrayBuffer = await streamToArrayBuffer(obj.body);
+          const base64 = arrayBufferToBase64(arrayBuffer);
+          const contentType = obj.httpMetadata?.contentType || "image/jpeg";
+  
+          return {
+            id: obj.key,
+            image: `data:${contentType};base64,${base64}`
+          };
+        })
+      );
+  
+      // Filter out nulls
+      const filteredImages: { id: string, image: string }[] = imagesBase64.filter((x): x is { id: string, image: string } => {
+        if (x !== null && x !== undefined){
+          return true
+        } else {
+          return false
         }
-    }
-    const ImagesObj: ImagesObjType = {};
-    for (let i = 0; i < filteredImages.length; i++) {
-      ImagesObj[filteredImages[i]?.id] = filteredImages[i]
-    }
+      });
 
-    return c.json(ImagesObj);
+      interface ImagesObjType {
+          [id: string]: {
+            id: string,
+            image: string
+          }
+      }
+      const ImagesObj: ImagesObjType = {};
+      for (let i = 0; i < filteredImages.length; i++) {
+        ImagesObj[filteredImages[i]?.id] = filteredImages[i]
+      }
+  
+      return c.json(ImagesObj);
+  
+    } catch (err: any) {
+      if (err?.message?.retryable && i === retries) {
+        return c.json({ message: err }, 500);
+      }
+      if (err?.message?.retryable){
+        await new Promise (r => setTimeout(r, 500))
+      }
 
-  } catch (err) {
-    return c.json({ message: "internal error" }, 500);
+    }
   }
+  return c.json({ message: "internal error" }, 500);
 });
 
 
@@ -696,6 +714,71 @@ blogsRouter.get("/getSuggestions", async (c) => {
     return c.json({
       message: "invalid parameters"
     }) 
+  }
+})
+
+
+
+
+blogsRouter.get("/firstSearchResults", async (c) => {
+  try {
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const query = c.req.query("query")
+    if (!query) {
+      return c.json({
+        message: "invalid parametres"
+      })
+    }
+    const response: blog[] | null = await firstSearchResult(prisma, c.get("userId"), query)
+    if (response) {
+      const blogsObject : blogsObject = {};
+      response.forEach((blog: blog) => {
+        blogsObject[blog.id] = blog
+      })
+      return c.json(blogsObject)
+    } else {
+      return c.json({
+        message: "some error occured"
+      }, 403)
+    }
+  } catch (err) {
+    return c.json({
+      message: "some error occured"
+    }, 403)
+  }
+})
+blogsRouter.get("/searchResults", async (c) => {
+  try {
+    const prisma = await client(c.env.DATABASE_URL) as unknown as PrismaClient
+    const cursor = c.req.query("cursor")
+    const query = c.req.query("query")
+    if (!query) {
+      return c.json({
+        message: "invalid parametres"
+      })
+    }
+    if (cursor){
+      const response: blog[] | null = await searchResults(prisma, c.get("userId"), query, cursor)
+      if (response) {
+        const blogsObject : blogsObject = {};
+        response.forEach((blog: blog) => {
+          blogsObject[blog.id] = blog
+        })
+        return c.json(blogsObject)
+      } else {
+        return c.json({
+          message: "some error occured"
+        }, 403)
+      }
+    } else {
+        return c.json({
+          message: "cursor not found"
+        }, 403)
+    }
+  } catch (err) {
+    return c.json({
+      message: "some error occured"
+    }, 403)
   }
 })
 

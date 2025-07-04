@@ -540,11 +540,12 @@ export async function suggestions(prisma: PrismaClient, query: string) {
     try {
         const res = await prisma.post.findMany({
             where: {
+                published:true,
                 title: {
                     contains: query,
                     mode: "insensitive"
                 }
-            }, take: 4,
+            }, take: 8,
             select: {
                 id: true,
                 title: true
@@ -570,11 +571,113 @@ export async function AuthorSuggestions(prisma: PrismaClient, query: string) {
                     startsWith: query,
                     mode: "insensitive"
                 }
-            }, take: 4,
+            }, take: 8,
             select: {
                 id: true,
                 name: true,
                 profilePicExist: true
+            }
+        })
+        if (res) {
+            return res;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        return null;
+    }
+}
+
+
+
+export async function firstSearchResult(prisma: PrismaClient, myAuthorId: string, query: string){
+    try {
+        const res = await prisma.post.findMany({
+            where: {
+                published: true,
+                authorId: {
+                    not: myAuthorId
+                }, 
+                AND: [
+                    {
+                        title: {
+                            contains: query,
+                            mode: "insensitive"
+                        }
+                    }
+                ]
+            }, orderBy:{
+                date: "desc"
+            }, 
+            take: 10,            
+            select : {
+                id: true,
+                title: true,
+                summary: true,
+                content: true,
+                editorState: true,
+                authorId: true,
+                imageExist: true,
+                date: true,
+                likes: true,
+                numberOfComments: true,
+                author: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        })
+        if (res) {
+            return res;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        return null;
+    }
+}
+
+export async function searchResults(prisma: PrismaClient, myAuthorId: string, query: string, lastSeenBlogId: string){
+    try {
+        const res = await prisma.post.findMany({
+            where: {
+                published: true,
+                authorId: {
+                    not: myAuthorId
+                }, 
+                AND: [
+                    {
+                        title: {
+                            contains: query,
+                            mode: "insensitive"
+                        }
+                    }
+                ]
+            },orderBy:{
+                date: "desc"
+            }, 
+            skip: 1,
+            take: 10,
+            cursor: {
+                id: lastSeenBlogId
+            },            
+            select : {
+                id: true,
+                title: true,
+                summary: true,
+                content: true,
+                editorState: true,
+                authorId: true,
+                imageExist: true,
+                date: true,
+                likes: true,
+                numberOfComments: true,
+                author: {
+                    select: {
+                        name: true
+                    }
+                }
             }
         })
         if (res) {

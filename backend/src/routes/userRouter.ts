@@ -1,8 +1,7 @@
 import { Hono } from 'hono'
-import { decode, sign, verify } from 'hono/jwt'
+import { sign } from 'hono/jwt'
 import { createUser, findUser, client, userLogin, editBlog, editUser, getUser, AuthorSuggestions } from '../db/prismaFunctions';
-import { signupBodySchema, signinBodySchema } from "common-medium-project";
-import {string, z} from "zod"
+import {z} from "zod"
 import { jwtVerification } from '../middlewares/middlewares';
 import { PrismaClient } from '@prisma/client/extension';
 
@@ -16,6 +15,16 @@ const userRouter = new Hono<{
   }
 }>()
 
+export const signupBodySchema = z.object({
+    email: z.string().email(),
+    name: z.string(),
+    password: z.string().min(6, "password must be minimum 6 characters")
+  })
+
+export const signinBodySchema = z.object({
+email: z.string().email(),
+password: z.string()
+})
 
 async function hash(text: string) {
   const myText = new TextEncoder().encode(text);

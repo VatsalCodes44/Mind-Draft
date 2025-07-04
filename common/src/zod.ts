@@ -3,7 +3,7 @@ import z from "zod";
 
 export const signupBodySchema = z.object({
     email: z.string().email(),
-    name: z.string().optional(),
+    name: z.string(),
     password: z.string().min(6, "password must be minimum 6 characters")
   })
 
@@ -24,16 +24,28 @@ export const blogPostSchema = z.object({
 })
 
 export const editPostSchema = z.object({
-  image: z.instanceof(File).optional(),
+  image: z.instanceof(File).optional().nullable(),
   blogId: z.string(),
   title: z.string(),
   summary: z.string(),
   content: z.string(),
   editorState: z.string(),
-  imageExist: z.boolean(),
+  published: z.boolean(),
 })
 
 export type signupBodySchemaType = z.infer<typeof signupBodySchema>
 export type signinBodySchemaType = z.infer<typeof signinBodySchema>
 export type blogPostSchemaType = z.infer<typeof blogPostSchema>
 export type blogUpdateSchemaType = z.infer<typeof editPostSchema>
+
+export interface createBlogFunction {
+    title: string;
+    summary: string;
+    content: string;
+    editorState: string;
+    imageExist: boolean;
+    published: boolean;
+    date: string;
+    authorId: string;
+}
+

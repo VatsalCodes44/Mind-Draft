@@ -11,7 +11,6 @@ import Random from "./pages/Random"
 import SearchedBlog from "./pages/SingleSearchedBlog"
 import SearchUser from "./pages/SearchUser"
 import UserBlog from "./pages/UserBlog"
-import SingleSearchedBlog from "./pages/SingleSearchedBlog"
 import { RefreshRoute } from "./pages/RefreshRoute"
 
 const Upload = React.lazy( () => {
@@ -73,7 +72,6 @@ function App() {
                 <Route path= "/updateProfile"  element = {<UpdateProfile/>} />
                 <Route path= "/searchUser"  element = {<SearchUser/>} />
                 <Route path= "/searchedBlog"  element = {<SearchedBlog/>} />
-                <Route path= "/SingleSearchedBlog"  element = {<SingleSearchedBlog/>} />
               </Routes>
           </BrowserRouter>
         </RecoilRoot>
