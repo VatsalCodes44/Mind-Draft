@@ -55,23 +55,33 @@ Mind Draft is a full-stack blogging platform that empowers users to express thei
 
 ```
 mind-draft/
-├── frontend/
+├── common/                          # Shared Zod validation schemas
 │   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── pages/          # Page components
-│   │   ├── hooks/          # Custom React hooks
-│   │   ├── utils/          # Utility functions
-│   │   └── types/          # TypeScript types
-│   └── public/             # Static assets
+│   ├── dist/
+│   └── package.json
 │
-└── backend/
+├── frontend/                        # React + TypeScript + Tailwind CSS
+│   ├── src/
+│   │   ├── components/              # Reusable UI components (Auth, Blogs, Editor, Profile, Engagement, Search, UI elements)
+│   │   ├── pages/                   # Route pages (Signin, Signup, Blogs, Upload, Edit, Profile)
+│   │   ├── store/                   # Recoil state management (user info, blog data)
+│   │   ├── hooks/                   # Custom React hooks
+│   │   ├── assets/                  # Static assets (images, SVGs)
+│   │   └── App.tsx                  # Main app with routing
+│   ├── public/                      # Public static files
+│   ├── package.json
+│   └── vite.config.ts
+│
+└── backend/                         # Hono + Prisma on Cloudflare Workers
     ├── src/
-    │   ├── routes/         # API routes
-    │   ├── controllers/    # Request handlers
-    │   ├── middleware/     # Custom middleware
-    │   └── utils/          # Helper functions
-    └── prisma/
-        └── schema.prisma   # Database schema
+    │   ├── routes/                  # API endpoints
+    │   ├── middlewares/             # Auth & validation middleware
+    │   └── index.ts                 # Worker entry point
+    ├── prisma/
+    │   ├── migrations/              # Database migrations
+    │   └── schema.prisma            # Database schema
+    ├── package.json
+    └── wrangler.jsonc               # Cloudflare Workers config
 
 ```
 
